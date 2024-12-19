@@ -1,0 +1,7 @@
+[data-bs-theme=dark] {
+    --bs-light-rgb: 33, 37, 41;
+}
+
+[data-bs-theme="dark"] .plot-container {
+    filter: invert(75%) hue-rotate(180deg);
+}

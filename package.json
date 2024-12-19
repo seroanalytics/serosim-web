@@ -16,6 +16,7 @@
     "react-dom": "^18.3.1",
     "react-resizable": "^3.0.5",
     "react-scripts": "5.0.1",
+    "react-spinners": "^0.15.0",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
     "webr": "^0.4.2"
