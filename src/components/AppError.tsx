@@ -12,6 +12,7 @@ export default function AppError({error}: Props) {
         dispatch({type: ActionType.ERROR_DISMISSED, payload: error});
     }
     return <Alert variant={"danger"} className={"rounded-0 border-0 mb-1"}>
+        {error}
         <Button variant={"close"} role={"close"} onClick={remove}
                 className={"mx-2 float-end"}></Button>
     </Alert>

@@ -1,5 +1,11 @@
 import {RObject, WebR} from "webr";
-import {AppState, PlotlyProps} from "../types";
+import {
+    AppState,
+    ContinuousBounded,
+    Demography,
+    ImmunityModel,
+    PlotlyProps
+} from "../types";
 
 export class RService {
 
@@ -10,68 +16,112 @@ export class RService {
         this._webR = new WebR();
     }
 
+    // close() {
+    //     this._webR.close()
+    // }
+
     async init() {
+        console.log("initialising")
         await this._webR.init();
-        await this._webR.installPackages(['purrr']);
+        await this._webR.installPackages(['purrr', 'plotly', 'ggplot2', 'viridis']);
         await this._webR.installPackages(['serosim'], {repos: ["http://127.0.0.1:9090", "https://repo.r-wasm.org/"]});
-        await this._webR.evalRVoid(`
-                            library(serosim)
-                         `
-        )
+
         this._ready = true
     }
 
     async getDemography(N: number) {
         await this.waitForReady();
-        const demography = await this._webR.evalR(`
+        try {
+            return await this._webR.evalR(`
           birth_times <- rep(1, ${N})
-          generate_pop_demography(${N}, times = 1:100, birth_times = birth_times, removal_min=1, removal_max=100, prob_removal=1)
+          serosim::generate_pop_demography(${N}, times = 1:100, birth_times = birth_times, removal_min=1, removal_max=100, prob_removal=1)
           `)
+        } catch (error) {
+            throw Error(`Error executing R code: ${error}. Please contact app administrators.`)
+        }
 
-        let result = (await demography.toJs() as any)
-        console.log(result)
-        return demography
     }
 
     async getDemographyPlot(demography: RObject): Promise<PlotlyProps> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({demography});
         const plotlyData = await this._webR.evalR(`
-         p <-  ggplot(demography) + 
-                geom_segment(aes(y = i, yend = i, x = birth, xend = removal - 1), linewidth = 2, alpha = 0.2, color = "gray85") + 
-                theme_minimal() + labs(x = "Time in study", y = "Individuals")  + 
-                theme(axis.text.y = element_blank())
+         p <-  ggplot2::ggplot(demography) + 
+                ggplot2::geom_segment(ggplot2::aes(y = i, yend = i, x = birth, xend = removal - 1), linewidth = 2, alpha = 0.2, color = "gray85") + 
+                ggplot2::theme_minimal() + ggplot2::labs(x = "Time in study", y = "Individuals")  + 
+                ggplot2::theme(axis.text.y = ggplot2::element_blank())
           
-          plotly_json(p, pretty = FALSE)`, {env});
+          plotly::plotly_json(p, pretty = FALSE)`, {env});
         let result = (await plotlyData.toJs() as any);
-        console.log(result)
         return JSON.parse(result.values[0])
     }
 
-    async convertObject() {
+    async getImmune(model: ImmunityModel) {
         await this.waitForReady();
-        const test = [{
-            max: 1,
-            boostWane: 2,
-            boostLong: 3
-        }]
-        let obj = await new this._webR.RObject(test);
-        const env = await new this._webR.REnvironment({obj});
-        await this._webR.evalRVoid(`
-            str(obj)
-        `, {env});
+        const plotlyData = await this._webR.evalR(`
+       p <- serosim::plot_biomarker_mediated_protection(0:${model.max}, 
+                biomarker_prot_midpoint=${model.midpoint},
+                biomarker_prot_width=${model.variance})
+                
+       plotly::plotly_json(p, pretty = FALSE)
+        `)
+        let plotly = (await plotlyData.toJs() as any);
+        return JSON.parse(plotly.values[0])
     }
 
-    //
-    // pars <- data.frame(
-    //     exposure_id = rep(bioexp_i$exposure_id, 4),
-    //     biomarker_id =  rep(bioexp_i$biomarker_id, 4),
-    //     name = c("boost_long", "boost_short", "wane_long", "wane_short"),
-    //     mean = c(input$boostLong, input$boost_short, input$wane_long, input$wane_short),
-    //     sd = NA,
-    //     distribution = NA
-    // )
-    // model_pars <- bind_rows(inputs[[1]]$pars, inputs[[2]]$pars)
+    async getObs(model: ContinuousBounded, demography: Demography) {
+        await this.waitForReady();
+        const plotlyData = await this._webR.evalR(`
+             observation_times <- purrr::map_df(1:${demography.numIndividuals}, 
+              function(i) {
+                
+                data.frame(
+                  id = i, 
+                  t = sample(1:${demography.tmax}, ${model.numBleeds}),
+                  b = 1
+                )
+              }
+            )
+            p <- ggplot2::ggplot(observation_times) + 
+                        ggplot2::geom_point(ggplot2::aes(y = id, x = t), color = "red")
+            plotly::plotly_json(p, pretty = FALSE)
+        `)
+        let plotly = (await plotlyData.toJs() as any);
+        return JSON.parse(plotly.values[0])
+    }
+
+    async getIndividualKinetics(demography: RObject, result: RObject) {
+        await this.waitForReady();
+        const env = await new this._webR.REnvironment({demography, result});
+        const plotlyData = await this._webR.evalR(`
+         p <- serosim::plot_subset_individuals_history(result$biomarker_states, result$immune_histories_long, subset = 10, demography)
+          
+          plotly::plotly_json(p, pretty = FALSE)`, {env});
+        let plotly = (await plotlyData.toJs() as any);
+        return JSON.parse(plotly.values[0])
+    }
+
+    async getImmuneHistories(result: RObject) {
+        await this.waitForReady();
+        const env = await new this._webR.REnvironment({result});
+        const plotlyData = await this._webR.evalR(`
+         p <- serosim::plot_immune_histories(result$immune_histories_long)
+          
+          plotly::plotly_json(p, pretty = FALSE)`, {env});
+        let plotly = (await plotlyData.toJs() as any);
+        return JSON.parse(plotly.values[0])
+    }
+
+    async getBiomarkerQuantity(result: RObject) {
+        await this.waitForReady();
+        const env = await new this._webR.REnvironment({result});
+        const plotlyData = await this._webR.evalR(`
+         p <- serosim::plot_biomarker_quantity(result$biomarker_states)
+          
+          plotly::plotly_json(p, pretty = FALSE)`, {env});
+        let plotly = (await plotlyData.toJs() as any);
+        return JSON.parse(plotly.values[0])
+    }
 
     async runSerosim(state: AppState) {
         await this.waitForReady();
@@ -157,9 +207,7 @@ export class RService {
                 value: 100
             }]
 
-        console.log(obsBounds)
         const bounds = await new this._webR.RObject(obsBounds);
-        console.log(modelPars)
         const model_pars = await new this._webR.RObject(modelPars);
         const env = await new this._webR.REnvironment({
             demography: state.demography.rObj as RObject,
@@ -169,7 +217,7 @@ export class RService {
         const N = state.demography.numIndividuals
         const tmax = state.demography.tmax
         const numBleeds = 1
-        const result = await this._webR.evalR(`
+        return await this._webR.evalR(`
              observation_times <- purrr::map_df(1:${N}, 
               function(i) {
                 
@@ -187,7 +235,6 @@ export class RService {
             biomarker_map_original <- data.frame(exposure_id = c("Delta", "Vax"), biomarker_id = c("IgG", "IgG"))
             biomarker_map <- serosim::reformat_biomarker_map(biomarker_map_original)
        
-            
             foe_pars <- array(0, dim=c(1, ${tmax}, 2))
 
             ## Specify the force of exposure for exposure ID 1 which represents measles natural infection
@@ -195,20 +242,7 @@ export class RService {
     
             ## Specify the force of exposure for exposure ID 2 which represents measles vaccination
             foe_pars[,,2] <- 0.04
-            
- 
-            print(simulation_settings)
-    print(demography)
-   print(observation_times)
-    print(foe_pars)
-   print(biomarker_map)
-  print(serosim::reformat_biomarker_map(model_pars))
-    print(exposure_model_simple_FOE)
-    print(serosim::immunity_model_vacc_ifxn_biomarker_prot)
-    print(serosim::antibody_model_biphasic)
-    print(serosim::observation_model_continuous_noise)
-   print(serosim::draw_parameters_random_fx)
-   
+              
    serosim::runserosim(
     simulation_settings = simulation_settings,
     demography = demography,
@@ -216,7 +250,7 @@ export class RService {
     foe_pars = foe_pars,
     biomarker_map = biomarker_map,
     model_pars = serosim::reformat_biomarker_map(model_pars),
-    exposure_model = exposure_model_simple_FOE,
+    exposure_model = serosim::exposure_model_simple_FOE,
     immunity_model = serosim::immunity_model_vacc_ifxn_biomarker_prot,
     antibody_model = serosim::antibody_model_biphasic,
     observation_model = serosim::observation_model_continuous_noise,

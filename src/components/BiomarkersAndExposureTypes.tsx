@@ -7,6 +7,7 @@ import React, {useContext} from "react";
 import {ActionType, DispatchContext, StateContext} from "../contexts";
 import {BiomarkerExposurePair} from "../types";
 import AddBiomarkerExposureRow from "./AddBiomarkerExposureRow";
+import SectionError from "./SectionError";
 
 export function BiomarkersAndExposureTypes() {
 
@@ -20,8 +21,9 @@ export function BiomarkersAndExposureTypes() {
         })
     }
 
-    return <Row><Col className={"pt-5"}>
-        <h4>2. Define biomarkers and exposure types</h4>
+    return <Row>
+        <Col className={"pt-5"}>
+        <h4>1. Define biomarkers and exposure types</h4>
         <Row className={"pt-3"}>
             <Col>
                 <Table striped bordered>

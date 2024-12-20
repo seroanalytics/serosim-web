@@ -1,9 +1,16 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import App from '../src/components/App';
+import React from "react";
+import {render, screen} from "@testing-library/react";
+import App from "../src/components/App";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
-});
+describe("<App />", () => {
+
+    it("will render",async () => {
+        render(<App/>);
+        const errors = await screen.findAllByRole("alert");
+        expect(errors.length).toBe(2);
+    });
+
+    afterAll(() => {
+
+    })
+})

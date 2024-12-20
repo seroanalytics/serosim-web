@@ -17,7 +17,7 @@ export default function InlineFormControl({value, handleChange, label, type = "i
         } else {
             value = parseInt(e.target.value)
         }
-        handleChange(value);
+        handleChange(e.target.value);
     };
 
     return <Form.Group className="row g-3 mb-3 align-items-center">

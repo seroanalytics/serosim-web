@@ -40,6 +40,7 @@ export interface Demography {
     rObj: any
     numIndividuals: number
     tmax: number
+    pRemoval: number
 }
 
 export interface AppState {
@@ -50,4 +51,5 @@ export interface AppState {
     demography: Demography
     genericErrors: string[]
     rReady: boolean
+    result: any
 }

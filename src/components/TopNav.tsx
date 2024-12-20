@@ -23,7 +23,7 @@ export default function TopNav({
         <Container fluid>
             <img alt="Serosim logo"
                  src={theme === "dark" ? "logolight.png" : "logo.png"}
-                 width={200}
+                 width={250}
                  className={"me-3"}></img>
             <Navbar.Toggle aria-controls="basic-navbar-nav"/>
             <Navbar.Collapse id="basic-navbar-nav"></Navbar.Collapse>

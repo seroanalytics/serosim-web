@@ -11,8 +11,10 @@ export enum ActionType {
     SET_IMMUNITY_MODEL = "SET_IMMUNITY_MODEL",
     SET_OBSERVATION_MODEL = "SET_OBSERVATION_MODEL",
     SET_KINETICS = "SET_KINETICS",
+    SET_RESULTS = "SET_RESULTS",
     ADD_DEMOGRAPHY = "ADD_DEMOGRAPHY",
-    R_READY = "R_READY"
+    R_READY = "R_READY",
+    LOAD_SCENARIO = "LOAD_SCENARIO"
 }
 
 export interface Action {
@@ -22,49 +24,22 @@ export interface Action {
 
 export const initialState: AppState = {
     genericErrors: [],
-    biomarkerExposurePairs: [{
-        biomarker: "IgG",
-        exposureType: "Delta",
-        FOE: "1"
-    },
-        {biomarker: "IgG", exposureType: "Vax", FOE: "1"}],
+    biomarkerExposurePairs: [],
     demography: {
-        numIndividuals: 100,
-        tmax: 100,
+        numIndividuals: 0,
+        tmax: 0,
+        pRemoval: 0,
         rObj: null
     },
     rReady: false,
-    kinetics: {
-        "IgGVax": {
-            waneShort: 1,
-            waneLong: 1,
-            boostShort: 1,
-            boostLong: 1
-        },
-        "IgGDelta": {
-            waneShort: 1,
-            waneLong: 1,
-            boostShort: 1,
-            boostLong: 1
-        }
-    },
-    observationalModels: {
-        "IgG": {
-            upperBound: 100,
-            lowerBound: 1,
-            numBleeds: 1,
-            error: 1
-        }
-    },
-    immunityModels: {
-        "IgG": {
-            max: 100,
-            midpoint: 25,
-            variance: 1
-        }
-    }
+    kinetics: {},
+    observationalModels: {},
+    immunityModels: {},
+    result: null
 }
 
-export const RContext = createContext<RService>(new RService());
+export const rService = new RService();
+rService.init();
+export const RContext = createContext<RService>(rService);
 export const DispatchContext = createContext<Dispatch<Action>>(() => null);
 export const StateContext = createContext<AppState>(initialState);
