@@ -1,12 +1,12 @@
 import {useState} from "react";
 import {useDebouncedEffect} from "./useDebouncedEffect";
 
-export const useR = (func: () => Promise<void>, deps: any[], delay: number = 250): string => {
+export const useAsyncEffectSafely = (func: () => Promise<void>, deps: any[], delay: number = 250): string => {
 
     const [error, setError] = useState<string>("");
 
     useDebouncedEffect(() => {
-        const runRCode = async () => {
+        const runAsyncFunc = async () => {
             setError("");
             try {
                 await func()
@@ -16,7 +16,7 @@ export const useR = (func: () => Promise<void>, deps: any[], delay: number = 250
             }
         }
 
-        runRCode();
+        runAsyncFunc();
     }, deps, delay)
 
     return error

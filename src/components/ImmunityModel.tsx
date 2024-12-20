@@ -5,7 +5,7 @@ import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {PlotlyProps} from "../types";
 import SectionError from "./SectionError";
-import {useR} from "../hooks/useR";
+import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 
 export default function ImmunityModel({biomarker}: { biomarker: string }) {
 
@@ -46,7 +46,7 @@ export default function ImmunityModel({biomarker}: { biomarker: string }) {
         })
     }
 
-    const plotError = useR(async () => {
+    const plotError = useAsyncEffectSafely(async () => {
         setPlot(null)
         const plot = await rService.getImmune(immunityModel);
         setPlot(plot)

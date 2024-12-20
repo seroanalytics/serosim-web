@@ -4,7 +4,7 @@ import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import SectionError from "./SectionError";
-import {useR} from "../hooks/useR";
+import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 
 export function Demography() {
 
@@ -15,7 +15,7 @@ export function Demography() {
 
     const demography = state.demography
 
-    const demoError = useR(async () => {
+    const demoError = useAsyncEffectSafely(async () => {
         setPlot(null);
 
         if (demography.numIndividuals < 1) {
@@ -32,7 +32,7 @@ export function Demography() {
 
     }, [dispatch, rService, demography.numIndividuals])
 
-    const plotError = useR(async () => {
+    const plotError = useAsyncEffectSafely(async () => {
         console.log("plotting")
         console.log(demography.rObj)
         if (demography.rObj) {

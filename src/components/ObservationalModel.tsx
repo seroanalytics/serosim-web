@@ -6,7 +6,7 @@ import {ContinuousBounded, PlotlyProps} from "../types";
 import {useDebouncedEffect} from "../hooks/useDebouncedEffect";
 import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
-import {useR} from "../hooks/useR";
+import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 
 export default function ObservationalModel({biomarker}: { biomarker: string }) {
     const dispatch = useContext(DispatchContext);
@@ -55,7 +55,7 @@ export default function ObservationalModel({biomarker}: { biomarker: string }) {
         })
     }
 
-    const plotError = useR(async () => {
+    const plotError = useAsyncEffectSafely(async () => {
         setPlot(null)
         const plot = await rService.getObs(obsModel, state.demography);
         setPlot(plot)
