@@ -79,7 +79,10 @@ export default function Results() {
             <h4>6. Generate dataset</h4>
             <RunSerosim/>
             {downloading && <ScaleLoader/>}
-            {state.result && <Button size={"lg"} onClick={downloadResults} disabled={downloading}>
+            {state.result && <Button size={"lg"}
+                                     onClick={downloadResults}
+                                     variant={"secondary"}
+                                     disabled={downloading}>
                 <DownloadCloudIcon/> Download
             </Button>}
             <Row className={"mt-3"}>

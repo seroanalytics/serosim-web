@@ -82,7 +82,7 @@ export default function AddBiomarkerExposureRow() {
                 className={valid ? "d-none" : "invalid-feedback d-block"}>
                 {validationMessage}
             </div>
-            <Button variant="success"
+            <Button variant="primary"
                     onClick={add}>Add</Button>
         </td>
 

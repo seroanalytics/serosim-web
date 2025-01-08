@@ -9,9 +9,9 @@ function StepButton({name, num, complete, ready}: Step) {
     const state = useContext(StateContext);
     const isReady = ready(state)
     if (complete(state)) {
-        className += " btn-danger"
+        className += " btn-primary"
     } else if (isReady) {
-        className += " btn-outline-danger"
+        className += " btn-outline-primary"
     } else {
         className += " btn-light"
     }

@@ -35,7 +35,7 @@ export default function RunSerosim() {
     return <Row className={"my-2"}>
         <Col>{loading && <ScaleLoader/>}
             <SectionError error={error}/>
-            <Button variant={"success"} size={"lg"}
+            <Button variant={"primary"} size={"lg"}
                     disabled={!state.rReady || loading}
                     onClick={runSerosim}>
                 Generate dataset

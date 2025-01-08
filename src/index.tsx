@@ -1,10 +1,9 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import "bootstrap/dist/css/bootstrap.min.css";
+import './index.css';
 import App from './components/App';
 import reportWebVitals from './reportWebVitals';
-import {RService} from "./services/RService";
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

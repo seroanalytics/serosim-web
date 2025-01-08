@@ -83,7 +83,7 @@ const App = () => {
                             outputs.</p>
 
                         <p>Preconfigured scenarios:</p>
-                        <Button className={"me-2"} variant={"success"}
+                        <Button className={"me-2"} variant={"primary"}
                                 onClick={loadMeasles}>Measles</Button>
                         <Button onClick={reset} variant={"secondary"}>Reset all
                             fields</Button>
