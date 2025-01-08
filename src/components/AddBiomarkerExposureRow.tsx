@@ -1,7 +1,6 @@
 import {Button, Form} from "react-bootstrap";
 import React, {useContext, useState} from "react";
 import {ActionType, DispatchContext, StateContext} from "../contexts";
-import exp from "node:constants";
 
 export default function AddBiomarkerExposureRow() {
 
@@ -77,6 +76,7 @@ export default function AddBiomarkerExposureRow() {
                           value={FOE} onChange={onChangeFOE}>
             </Form.Control>
         </td>
+
         <td>
             <div
                 className={valid ? "d-none" : "invalid-feedback d-block"}>

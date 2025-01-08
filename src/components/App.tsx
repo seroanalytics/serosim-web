@@ -7,7 +7,7 @@ import {
     StateContext
 } from "../contexts";
 import {Demography} from "./Demography";
-import {Alert, Button, Container, Tab, Tabs} from "react-bootstrap";
+import {Alert, Button, Container} from "react-bootstrap";
 import TopNav from "./TopNav";
 import usePersistedState from "../hooks/usePersistedState";
 import {rootReducer} from "../rootReducer";
@@ -16,13 +16,9 @@ import {BiomarkersAndExposureTypes} from "./BiomarkersAndExposureTypes";
 import {AntibodyKinetics} from "./AntibodyKinetics";
 import {ObservationalModels} from "./ObservationalModels";
 import {ImmunityModels} from "./ImmunityModels";
-import RunSerosim from "./RunSerosim";
 import Results from "./Results";
-import {
-    InfoIcon, LucideAlertTriangle,
-    LucideMessageCircleWarning,
-    MessageCircleWarning
-} from "lucide-react";
+import {LucideAlertTriangle} from "lucide-react";
+import Stepper from "./Stepper";
 
 const App = () => {
 
@@ -79,7 +75,7 @@ const App = () => {
                     {state.genericErrors.map((e, index) => <AppError error={e}
                                                                      key={"error" + index}/>)}
 
-                    <Container fluid={"sm"} className={"pt-5"}>
+                    <Container fluid={"sm"} className={"py-5"}>
 
                         <p>Serosim is a an R package for simulating
                             serosurvey data. This app allows you to run
@@ -91,14 +87,13 @@ const App = () => {
                                 onClick={loadMeasles}>Measles</Button>
                         <Button onClick={reset} variant={"secondary"}>Reset all
                             fields</Button>
+                        <Stepper/>
+                        <Demography/>
                         <BiomarkersAndExposureTypes/>
                         <AntibodyKinetics/>
-                        <ObservationalModels/>
                         <ImmunityModels/>
-                        <Demography/>
-                        {/*<DemographyJs/>*/}
-                        <RunSerosim/>
-                        {state.result && <Results/>}
+                        <ObservationalModels/>
+                        <Results/>
                     </Container>
                 </DispatchContext.Provider>
             </StateContext.Provider>

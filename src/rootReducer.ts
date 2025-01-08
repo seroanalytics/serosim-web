@@ -5,21 +5,32 @@ import {
     ContinuousBounded, Dict,
     ImmunityModel
 } from "./types";
-import {Action, ActionType} from "./contexts";
+import {
+    Action,
+    ActionType,
+    initialDemography,
+    initialSteps,
+} from "./contexts";
 
 const measles = {
     genericErrors: [],
-    biomarkerExposurePairs: [{
-        biomarker: "IgG",
-        exposureType: "Delta",
-        FOE: "1"
-    },
-        {biomarker: "IgG", exposureType: "Vax", FOE: "1"}],
+    biomarkerExposurePairs: [
+        {
+            biomarker: "IgG",
+            exposureType: "Delta",
+            FOE: "1"
+        },
+        {
+            biomarker: "IgG",
+            exposureType: "Vax",
+            FOE: "1"
+        }],
     demography: {
         numIndividuals: 100,
         tmax: 100,
         pRemoval: 1,
-        rObj: null
+        rObj: null,
+        requireRecalculation: true
     },
     rReady: false,
     kinetics: {
@@ -51,24 +62,22 @@ const measles = {
             variance: 1
         }
     },
-    result: null
+    result: null,
+    steps: initialSteps
 }
 
 const scenarios: Dict<AppState> = {
-    "measles": measles, "empty": {
+    "measles": measles,
+    "empty": {
         genericErrors: [],
         biomarkerExposurePairs: [],
-        demography: {
-            numIndividuals: 0,
-            tmax: 0,
-            pRemoval: 0,
-            rObj: null
-        },
+        demography: initialDemography,
         rReady: false,
         kinetics: {},
         observationalModels: {},
         immunityModels: {},
-        result: null
+        result: null,
+        steps: initialSteps
     }
 }
 
@@ -76,7 +85,10 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
     console.log(action.type);
     switch (action.type) {
         case ActionType.LOAD_SCENARIO:
-            return {...scenarios[action.payload as string], rReady: state.rReady}
+            return {
+                ...scenarios[action.payload as string],
+                rReady: state.rReady
+            }
         case ActionType.ERROR_ADDED:
             return {
                 ...state,
@@ -107,12 +119,12 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
         case ActionType.SET_KINETICS:
             return setKinetics(state, action.payload)
         case ActionType.ADD_DEMOGRAPHY:
-            console.log(action.payload)
             return {
                 ...state,
                 demography: {
                     ...state.demography,
-                    ...action.payload
+                    ...action.payload,
+                    requireRecalculation: false
                 }
             }
         case ActionType.SET_RESULTS:

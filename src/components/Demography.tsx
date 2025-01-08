@@ -1,4 +1,4 @@
-import React, {useState, useContext} from "react";
+import React, {useState, useContext, useEffect} from "react";
 import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";
@@ -9,6 +9,7 @@ import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 export function Demography() {
 
     const [plot, setPlot] = useState<any>(null);
+
     const rService = useContext(RContext);
     const dispatch = useContext(DispatchContext);
     const state = useContext(StateContext);
@@ -20,29 +21,27 @@ export function Demography() {
 
         if (demography.numIndividuals < 1) {
             throw Error("Number of individuals must be positive")
+        } else if (demography.tmax < 1) {
+            throw Error("Max time must be positive")
         } else {
-            const demographyObj = await rService.getDemography(demography.numIndividuals);
+            const demographyObj = await rService.getDemography(
+                demography.numIndividuals,
+                demography.tmax,
+                demography.pRemoval);
             dispatch({
                 type: ActionType.ADD_DEMOGRAPHY,
                 payload: {
                     rObj: demographyObj
                 }
             })
-        }
-
-    }, [dispatch, rService, demography.numIndividuals])
-
-    const plotError = useAsyncEffectSafely(async () => {
-        console.log("plotting")
-        console.log(demography.rObj)
-        if (demography.rObj) {
-            const result = await rService.getDemographyPlot(state.demography.rObj);
+            const result = await rService.getDemographyPlot(demographyObj);
             setPlot(result);
-        } else {
-            setPlot(null);
         }
-
-    }, [dispatch, rService, demography.rObj])
+    }, [dispatch, rService,
+        demography.numIndividuals,
+        demography.tmax,
+        demography.pRemoval,
+        demography.requireRecalculation])
 
     const setMaxTime = (tmax: number) => {
         dispatch({
@@ -67,9 +66,8 @@ export function Demography() {
 
     return <Row>
         <Col className={"pt-5"}>
-            <h4>5. Define demography</h4>
+            <h4>1. Define demography</h4>
             <SectionError error={demoError}/>
-            <SectionError error={plotError}/>
             <Row className={"mt-3"}>
                 <Col sm={4}>
                     <Form className={"pt-4 border px-2"}>
@@ -85,7 +83,8 @@ export function Demography() {
                     </Form>
                 </Col>
                 <Col>
-                    <PlotlyPlot plot={plot} error={demoError || plotError}/>
+                    <PlotlyPlot plot={plot}
+                                error={demoError}/>
                 </Col>
             </Row>
         </Col>

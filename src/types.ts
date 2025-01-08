@@ -1,3 +1,5 @@
+import {WebRDataJs} from "webr/dist/webR/robj";
+
 export interface Dict<T> {
     [index: string]: T
 }
@@ -37,10 +39,18 @@ export interface ImmunityModel {
 }
 
 export interface Demography {
-    rObj: any
+    rObj: WebRDataJs | null
     numIndividuals: number
     tmax: number
     pRemoval: number
+    requireRecalculation: boolean
+}
+
+export interface Step {
+    num: number
+    name: string
+    complete: (state: AppState) => boolean
+    ready: (state: AppState) => boolean
 }
 
 export interface AppState {
@@ -52,4 +62,5 @@ export interface AppState {
     genericErrors: string[]
     rReady: boolean
     result: any
+    steps: Step[]
 }

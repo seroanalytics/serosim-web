@@ -11,6 +11,9 @@ export const useAsyncEffectSafely = (func: () => Promise<void>, deps: any[], del
             try {
                 await func()
             } catch (error) {
+                if (error instanceof WebAssembly.RuntimeError) {
+                    console.log("BAD")
+                }
                 console.log(error)
                 setError(`${error}`);
             }

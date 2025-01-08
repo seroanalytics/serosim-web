@@ -2,6 +2,7 @@ import {Button, Col, Row} from "react-bootstrap";
 import React, {useContext, useState} from "react";
 import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {ScaleLoader} from "react-spinners";
+import SectionError from "./SectionError";
 
 export default function RunSerosim() {
     const dispatch = useContext(DispatchContext);
@@ -9,38 +10,36 @@ export default function RunSerosim() {
     const rService = useContext(RContext);
 
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     async function runSerosim() {
         setLoading(true);
+        setError("");
         dispatch({
             type: ActionType.SET_RESULTS,
             payload: null
         });
         try {
             const result = await rService.runSerosim(state)
-
             dispatch({
                 type: ActionType.SET_RESULTS,
                 payload: result
             });
         } catch (error) {
             console.log(error)
-            dispatch({
-                type: ActionType.ERROR_ADDED,
-                payload: "Error executing R code: " + error
-            })
+            setError("Error executing R code: " + error);
         }
         setLoading(false);
     }
 
-    return <Row className={"mt-5 text-center"}>
+    return <Row className={"my-2"}>
         <Col>{loading && <ScaleLoader/>}
+            <SectionError error={error}/>
             <Button variant={"success"} size={"lg"}
                     disabled={!state.rReady || loading}
                     onClick={runSerosim}>
                 Generate dataset
             </Button>
-
         </Col>
     </Row>
 }

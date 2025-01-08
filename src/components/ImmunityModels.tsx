@@ -6,6 +6,10 @@ import ImmunityModel from "./ImmunityModel";
 export function ImmunityModels() {
     const state = useContext(StateContext);
 
+    if (!state.steps[3].ready(state)) {
+        return null
+    }
+
     return <Row>
         <Col className={"pt-5"}>
             <h4>4. Define immunity model</h4>

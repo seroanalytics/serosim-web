@@ -3,7 +3,6 @@ import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {ContinuousBounded, PlotlyProps} from "../types";
-import {useDebouncedEffect} from "../hooks/useDebouncedEffect";
 import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
@@ -57,9 +56,9 @@ export default function ObservationalModel({biomarker}: { biomarker: string }) {
 
     const plotError = useAsyncEffectSafely(async () => {
         setPlot(null)
-        const plot = await rService.getObs(obsModel, state.demography);
+        const plot = await rService.getObs(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax);
         setPlot(plot)
-    }, [obsModel, state.demography])
+    }, [obsModel, state.demography.tmax, state.demography.numIndividuals, obsModel.numBleeds])
 
     return <Row className={"mb-2"}>
         <div className={"pb-2"}><SectionError error={plotError}/></div>
