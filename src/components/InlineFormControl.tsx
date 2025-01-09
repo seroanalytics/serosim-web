@@ -8,7 +8,7 @@ interface Props {
     type?: "float" | "int" | "string"
 }
 
-export default function InlineFormControl({value, handleChange, label, type = "int"}: Props) {
+export default function InlineFormControl({value, handleChange, label, type = "float"}: Props) {
 
     const handleChangeEvent = (e: any) => {
        let value: any = e.target.value;

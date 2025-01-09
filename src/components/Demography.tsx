@@ -68,9 +68,11 @@ export function Demography() {
                 <Col>
                     <Form className={"pt-4 border px-2"}>
                         <InlineFormControl value={demography.numIndividuals}
+                                           type={"int"}
                                            handleChange={setN}
                                            label={"Number of individuals"}/>
                         <InlineFormControl value={demography.tmax}
+                                           type={"int"}
                                            handleChange={setMaxTime}
                                            label={"Max time"}/>
                         <InlineFormControl value={demography.pRemoval}

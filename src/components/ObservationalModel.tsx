@@ -73,6 +73,7 @@ export default function ObservationalModel() {
                                            handleChange={setUpperBound}
                                            label={"Upper bound"}/>
                         <InlineFormControl value={obsModel.numBleeds}
+                                           type={"int"}
                                            handleChange={setNumBleeds}
                                            label={"Number of bleeds per person"}/>
                     </Form>
