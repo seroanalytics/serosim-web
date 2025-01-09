@@ -1,4 +1,4 @@
-name: 🚢 Docker
+name: 🚀 Deploy
 
 on:
   push:
@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docker:
-    name: 🚢 Docker
+  deploy:
+    name: 🚀 Deploy
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -53,7 +53,7 @@ jobs:
           fi
           echo "GIT_SHA=${GIT_SHA}" >> $GITHUB_OUTPUT
 
-      - name: Deploy the app
+      - name: 🚀 Deploy the app
         uses: digitalocean/app_action/deploy@v2
         env:
           IMAGE_TAG_SEROSIM: ${{ steps.sha.outputs.GIT_SHA }}
