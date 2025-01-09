@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from "react";
+import React, {useState, useContext} from "react";
 import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";

@@ -1,5 +1,5 @@
 import {Button, Col, Row} from "react-bootstrap";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useState} from "react";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {RContext, StateContext} from "../contexts";
 import {PlotlyProps} from "../types";
