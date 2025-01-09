@@ -32,11 +32,18 @@ export class RService {
         this._webR.close()
     }
 
+    private getRepoUrl = () => {
+        if (process.env.NODE_ENV === "development") {
+            return "http://localhost:9090/repo";
+        }
+        return `https://${window.location.host}/repo`;
+    };
+
     async init() {
         console.log("Initialising R")
         await this._webR.init();
         await this._webR.installPackages(['plotly', 'ggplot2', 'viridis']);
-        await this._webR.installPackages(['serosim'], {repos: [`http://${window.location.host}/repo`, "https://repo.r-wasm.org/"]});
+        await this._webR.installPackages(['serosim'], {repos: [this.getRepoUrl(), "https://repo.r-wasm.org/"]});
 
         this._ready = true
     }
