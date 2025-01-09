@@ -1,8 +1,6 @@
 import {REnvironment, WebR} from "webr";
 import {
-    AppState, BiphasicDecay, Dict, ExposureType,
-    ImmunityModel,
-    PlotlyProps
+    AppState, BiphasicDecay, Dict, ExposureType, PlotlyProps
 } from "../types";
 import {WebRDataJs} from "webr/dist/webR/robj";
 
