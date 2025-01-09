@@ -1,7 +1,9 @@
-# Serosim for the web
-[![Project Status: Concept – Minimal or no implementation has been done yet, or the repository is only intended to be a limited example, demo, or proof-of-concept.](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+# SeroSim for the web
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 ![Docker Image Version](https://img.shields.io/docker/v/seroanalytics/serosim-web?logo=docker)
 ![GitHub License](https://img.shields.io/github/license/seroanalytics/serosim-web)
+
+<img width="250" alt="logo" src="https://github.com/user-attachments/assets/eeaf6e99-d82d-4556-aa08-a435eb60dd11" />
 
 Client-side React + WebR application for simulating serosurvey data using [serosim](https://github.com/seroanalytics/serosim).
 
@@ -93,7 +95,7 @@ services:
   run_command: /usr/local/bin/serosim-proxy serosim.seroanalytics.org
 ```
 
-A new image tag is created, pushed to DockerHub, and deployed to DigitalOcean on all pushes to main, 
+A new image tag is created, pushed to DockerHub, and deployed to DigitalOcean on all commits to main, 
 via the [deploy.yaml](https://github.com/seroanalytics/serosim-web/blob/main/.github/workflows/deploy.yaml) Github Action.
 
 ## Domain
