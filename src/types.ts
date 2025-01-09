@@ -9,10 +9,11 @@ export interface PlotlyProps {
     layout: any
 }
 
-export interface BiomarkerExposurePair {
-    biomarker: string
+export interface ExposureType {
     exposureType: string
-    FOE: string
+    FOE: number
+    isVax: boolean
+    age: number | null
 }
 
 export interface BiphasicDecay {
@@ -54,10 +55,11 @@ export interface Step {
 }
 
 export interface AppState {
-    biomarkerExposurePairs: BiomarkerExposurePair[]
+    biomarker: string
+    exposureTypes: ExposureType[]
     kinetics: Dict<BiphasicDecay>
-    observationalModels: Dict<ContinuousBounded>
-    immunityModels: Dict<ImmunityModel>
+    observationalModel: ContinuousBounded
+    immunityModel: ImmunityModel
     demography: Demography
     genericErrors: string[]
     rReady: boolean

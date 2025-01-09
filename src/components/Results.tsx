@@ -93,8 +93,6 @@ export default function Results() {
                                     hasTitle={true}
                                     error={kineticsError}/>}
                 </Col>
-            </Row>
-            <Row className={"mt-3"}>
                 <Col>
                     <SectionError error={quantityError}/>
                     {state.result &&

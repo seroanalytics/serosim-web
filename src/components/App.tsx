@@ -2,7 +2,6 @@ import React, {useEffect, useReducer} from "react";
 import {
     ActionType,
     DispatchContext,
-    initialState,
     RContext, rService,
     StateContext
 } from "../contexts";
@@ -12,18 +11,19 @@ import TopNav from "./TopNav";
 import usePersistedState from "../hooks/usePersistedState";
 import {rootReducer} from "../rootReducer";
 import AppError from "./AppError";
-import {BiomarkersAndExposureTypes} from "./BiomarkersAndExposureTypes";
+import {ExposureTypes} from "./ExposureTypes";
 import {AntibodyKinetics} from "./AntibodyKinetics";
-import {ObservationalModels} from "./ObservationalModels";
-import {ImmunityModels} from "./ImmunityModels";
+import ObservationalModel from "./ObservationalModel";
+import ImmunityModel from "./ImmunityModel";
 import Results from "./Results";
 import {LucideAlertTriangle} from "lucide-react";
 import Stepper from "./Stepper";
+import {empty} from "../scenarios";
 
 const App = () => {
 
     const [theme, setTheme] = usePersistedState<string>("theme", "dark");
-    const [state, dispatch] = useReducer(rootReducer, initialState);
+    const [state, dispatch] = useReducer(rootReducer, empty);
 
     useEffect(() => {
         rService
@@ -89,10 +89,10 @@ const App = () => {
                             fields</Button>
                         <Stepper/>
                         <Demography/>
-                        <BiomarkersAndExposureTypes/>
+                        <ObservationalModel/>
+                        <ImmunityModel/>
+                        <ExposureTypes/>
                         <AntibodyKinetics/>
-                        <ImmunityModels/>
-                        <ObservationalModels/>
                         <Results/>
                     </Container>
                 </DispatchContext.Provider>

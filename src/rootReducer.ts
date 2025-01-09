@@ -1,85 +1,16 @@
 import {
     AppState,
-    BiomarkerExposurePair,
+    ExposureType,
     BiphasicDecay,
-    ContinuousBounded, Dict,
+    ContinuousBounded,
     ImmunityModel
 } from "./types";
 import {
     Action,
-    ActionType,
-    initialDemography,
-    initialSteps,
+    ActionType
 } from "./contexts";
+import {scenarios} from "./scenarios";
 
-const measles = {
-    genericErrors: [],
-    biomarkerExposurePairs: [
-        {
-            biomarker: "IgG",
-            exposureType: "Delta",
-            FOE: "1"
-        },
-        {
-            biomarker: "IgG",
-            exposureType: "Vax",
-            FOE: "1"
-        }],
-    demography: {
-        numIndividuals: 100,
-        tmax: 100,
-        pRemoval: 1,
-        rObj: null,
-        requireRecalculation: true
-    },
-    rReady: false,
-    kinetics: {
-        "IgGVax": {
-            waneShort: 1,
-            waneLong: 1,
-            boostShort: 1,
-            boostLong: 1
-        },
-        "IgGDelta": {
-            waneShort: 1,
-            waneLong: 1,
-            boostShort: 1,
-            boostLong: 1
-        }
-    },
-    observationalModels: {
-        "IgG": {
-            upperBound: 100,
-            lowerBound: 1,
-            numBleeds: 1,
-            error: 1
-        }
-    },
-    immunityModels: {
-        "IgG": {
-            max: 100,
-            midpoint: 25,
-            variance: 1
-        }
-    },
-    result: null,
-    steps: initialSteps
-}
-
-const scenarios: Dict<AppState> = {
-    "measles": measles,
-    "empty": {
-        genericErrors: [],
-        biomarkerExposurePairs: [],
-        demography: initialDemography,
-        rReady: false,
-        kinetics: {},
-        observationalModels: {},
-        immunityModels: {},
-        result: null,
-        steps: initialSteps
-    }
-}
 
 export const rootReducer = (state: AppState, action: Action): AppState => {
     console.log(action.type);
@@ -104,13 +35,14 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
                 ...state,
                 genericErrors: []
             }
-        case ActionType.ADD_BIOMARKER_EXPOSURE_PAIR:
-            return addBiomarkerExposurePair(state, action.payload)
-        case ActionType.REMOVE_BIOMARKER_EXPOSURE_PAIR:
+        case ActionType.ADD_EXPOSURE_TYPE:
+            return addExposureType(state, action.payload)
+        case ActionType.REMOVE_EXPOSURE_TYPE:
             return {
                 ...state,
-                biomarkerExposurePairs: [...state.biomarkerExposurePairs
-                    .filter(p => p.biomarker !== action.payload.biomarker || p.exposureType !== action.payload.exposureType)]
+                result: null,
+                exposureTypes: [...state.exposureTypes
+                    .filter(p => p.exposureType !== action.payload.exposureType)]
             }
         case ActionType.SET_IMMUNITY_MODEL:
             return setImmunityModel(state, action.payload)
@@ -118,9 +50,12 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
             return setObservationalModel(state, action.payload)
         case ActionType.SET_KINETICS:
             return setKinetics(state, action.payload)
+        case ActionType.SET_BIOMARKER:
+            return setBiomarker(state, action.payload)
         case ActionType.ADD_DEMOGRAPHY:
             return {
                 ...state,
+                result: null,
                 demography: {
                     ...state.demography,
                     ...action.payload,
@@ -143,58 +78,58 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
     }
 }
 
-function addBiomarkerExposurePair(state: AppState, payload: BiomarkerExposurePair) {
-    const newState = {...state}
-    if (!newState.immunityModels[payload.biomarker]) {
-        newState.immunityModels[payload.biomarker] = {
+function setBiomarker(state: AppState, payload: string) {
+    const newState = {...state, biomarker: payload, result: null}
+    if (!newState.immunityModel) {
+        newState.immunityModel = {
             max: 0,
             midpoint: 0,
             variance: 0
         }
     }
-    if (!newState.observationalModels[payload.biomarker]) {
-        newState.observationalModels[payload.biomarker] = {
+    if (!newState.observationalModel) {
+        newState.observationalModel = {
             error: 0,
             lowerBound: 0,
             upperBound: 0,
             numBleeds: 1
         }
     }
-    if (!newState.kinetics[payload.biomarker + payload.exposureType]) {
-        newState.kinetics[payload.biomarker + payload.exposureType] = {
+    return newState
+}
+
+function addExposureType(state: AppState, payload: ExposureType) {
+    const newState = {...state, result: null}
+    if (!newState.kinetics[payload.exposureType]) {
+        newState.kinetics[payload.exposureType] = {
             boostLong: 0,
             boostShort: 0,
             waneShort: 0,
             waneLong: 0
         }
     }
-    newState.biomarkerExposurePairs = [...state.biomarkerExposurePairs, payload]
+    newState.exposureTypes = [...state.exposureTypes, payload]
     return newState
 }
 
-function setImmunityModel(state: AppState, payload: {
-    biomarker: string,
-    model: ImmunityModel
-}) {
-    const newState = {...state}
-    newState.immunityModels[payload.biomarker] = {...state.immunityModels[payload.biomarker], ...payload.model}
+function setImmunityModel(state: AppState, payload: ImmunityModel) {
+    const newState = {...state, result: null}
+    newState.immunityModel = {...state.immunityModel, ...payload}
     return newState
 }
 
-function setObservationalModel(state: AppState, payload: {
-    biomarker: string,
-    model: ContinuousBounded
-}) {
-    const newState = {...state}
-    newState.observationalModels[payload.biomarker] = {...state.observationalModels[payload.biomarker], ...payload.model}
+function setObservationalModel(state: AppState, payload: ContinuousBounded) {
+    const newState = {...state, result: null}
+    newState.observationalModel = {...state.observationalModel, ...payload}
     return newState
 }
 
 function setKinetics(state: AppState, payload: {
-    pair: BiomarkerExposurePair,
+    exposure: ExposureType,
     model: BiphasicDecay
 }) {
-    const newState = {...state}
-    newState.kinetics[payload.pair.biomarker + payload.pair.exposureType] = {...state.kinetics[payload.pair.biomarker + payload.pair.exposureType], ...payload.model}
+    const newState = {...state, result: null}
+    newState.kinetics = {...state.kinetics}
+    newState.kinetics[payload.exposure.exposureType] = {...state.kinetics[payload.exposure.exposureType], ...payload.model}
     return newState
 }

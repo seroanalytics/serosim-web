@@ -26,8 +26,7 @@ export default function RunSerosim() {
                 payload: result
             });
         } catch (error) {
-            console.log(error)
-            setError("Error executing R code: " + error);
+            setError(`${error}`);
         }
         setLoading(false);
     }

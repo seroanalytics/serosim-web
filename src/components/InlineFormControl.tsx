@@ -2,22 +2,22 @@ import {Col, Form, FormLabel} from "react-bootstrap";
 import React from "react";
 
 interface Props {
-    value: number
-    handleChange: (value: number) => void
+    value: number | string
+    handleChange: (value: any) => void
     label: string
-    type?: "float" | "int"
+    type?: "float" | "int" | "string"
 }
 
 export default function InlineFormControl({value, handleChange, label, type = "int"}: Props) {
 
     const handleChangeEvent = (e: any) => {
-       let value = 0;
+       let value: any = e.target.value;
         if (type === "float") {
             value = parseFloat(e.target.value)
-        } else {
+        } else if (type === "int") {
             value = parseInt(e.target.value)
         }
-        handleChange(e.target.value);
+        handleChange(value);
     };
 
     return <Form.Group className="row g-3 mb-3 align-items-center">
@@ -27,7 +27,7 @@ export default function InlineFormControl({value, handleChange, label, type = "i
             </FormLabel>
         </Col>
         <Col>
-            <Form.Control type={"number"} value={value}
+            <Form.Control type={type !== "string" ? "number": "text"} value={value}
                           onChange={handleChangeEvent}/>
         </Col>
     </Form.Group>

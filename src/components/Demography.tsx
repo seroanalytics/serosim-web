@@ -17,13 +17,8 @@ export function Demography() {
     const demography = state.demography
 
     const demoError = useAsyncEffectSafely(async () => {
-        setPlot(null);
-
-        if (demography.numIndividuals < 1) {
-            throw Error("Number of individuals must be positive")
-        } else if (demography.tmax < 1) {
-            throw Error("Max time must be positive")
-        } else {
+        if (demography.numIndividuals > 0 && demography.tmax > 0) {
+            setPlot(null);
             const demographyObj = await rService.getDemography(
                 demography.numIndividuals,
                 demography.tmax,
@@ -37,6 +32,7 @@ export function Demography() {
             const result = await rService.getDemographyPlot(demographyObj);
             setPlot(result);
         }
+
     }, [dispatch, rService,
         demography.numIndividuals,
         demography.tmax,
@@ -69,7 +65,7 @@ export function Demography() {
             <h4>1. Define demography</h4>
             <SectionError error={demoError}/>
             <Row className={"mt-3"}>
-                <Col sm={4}>
+                <Col>
                     <Form className={"pt-4 border px-2"}>
                         <InlineFormControl value={demography.numIndividuals}
                                            handleChange={setN}
@@ -83,8 +79,11 @@ export function Demography() {
                     </Form>
                 </Col>
                 <Col>
-                    <PlotlyPlot plot={plot}
-                                error={demoError}/>
+                    {(demography.numIndividuals >0 && demography.tmax > 0) && <PlotlyPlot plot={plot}
+                                error={demoError}/>}
+                    {(demography.numIndividuals < 1 || demography.tmax < 1) &&
+                        <div className={"py-5 text-center"}>Choose a number of
+                            individuals and max time greater than 0</div>}
                 </Col>
             </Row>
         </Col>

@@ -1,19 +1,19 @@
 import React, {useContext} from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {BiomarkerExposurePair} from "../types";
+import {ExposureType} from "../types";
 import {ActionType, DispatchContext, StateContext} from "../contexts";
 
-export default function BiphasicDecay({pair}: { pair: BiomarkerExposurePair }) {
+export default function BiphasicDecay({exposureType}: { exposureType: ExposureType }) {
     const dispatch = useContext(DispatchContext);
     const state = useContext(StateContext);
-    const model = state.kinetics[pair.biomarker+pair.exposureType]
+    const model = state.kinetics[exposureType.exposureType]
 
     const setBoostLong = (newValue: number) => {
         dispatch({
             type: ActionType.SET_KINETICS,
             payload: {
-                pair: pair,
+                exposure: exposureType,
                 model: {boostLong: newValue}
             }
         })
@@ -23,7 +23,7 @@ export default function BiphasicDecay({pair}: { pair: BiomarkerExposurePair }) {
         dispatch({
             type: ActionType.SET_KINETICS,
             payload: {
-                pair: pair,
+                exposure: exposureType,
                 model: {boostShort: newValue}
             }
         })
@@ -33,7 +33,7 @@ export default function BiphasicDecay({pair}: { pair: BiomarkerExposurePair }) {
         dispatch({
             type: ActionType.SET_KINETICS,
             payload: {
-                pair: pair,
+                exposure: exposureType,
                 model: {waneLong: newValue}
             }
         })
@@ -43,16 +43,15 @@ export default function BiphasicDecay({pair}: { pair: BiomarkerExposurePair }) {
         dispatch({
             type: ActionType.SET_KINETICS,
             payload: {
-                pair: pair,
+                exposure: exposureType,
                 model: {waneShort: newValue}
             }
         })
     }
 
-    return <Col sm={6} md={4} className={"pt-3"}>
-        <Form className={"pt-3 border px-2"}>
+    return <Form className={"pt-3 mt-2 border px-2"}>
             <h5 className={"pb-2"}>
-                {pair.exposureType} / {pair.biomarker}
+                {exposureType.exposureType}
             </h5>
             <Row>
                 <Col>
@@ -73,6 +72,5 @@ export default function BiphasicDecay({pair}: { pair: BiomarkerExposurePair }) {
                                        label={"Wane short"}/>
                 </Col>
             </Row>
-        </Form>
-    </Col>
+    </Form>
 }

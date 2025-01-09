@@ -7,30 +7,24 @@ import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 
-export default function ObservationalModel({biomarker}: { biomarker: string }) {
+export default function ObservationalModel() {
     const dispatch = useContext(DispatchContext);
     const state = useContext(StateContext);
-    const obsModel = state.observationalModels[biomarker]!! as ContinuousBounded;
+    const obsModel = state.observationalModel as ContinuousBounded;
     const rService = useContext(RContext);
     const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     const setModelError = (newValue: number) => {
         dispatch({
             type: ActionType.SET_OBSERVATION_MODEL,
-            payload: {
-                biomarker: biomarker,
-                model: {error: newValue}
-            }
+            payload: {error: newValue}
         })
     }
 
     const setLowerBound = (newValue: number) => {
         dispatch({
             type: ActionType.SET_OBSERVATION_MODEL,
-            payload: {
-                biomarker: biomarker,
-                model: {lowerBound: newValue}
-            }
+            payload: {lowerBound: newValue}
         })
     }
 
@@ -38,8 +32,7 @@ export default function ObservationalModel({biomarker}: { biomarker: string }) {
         dispatch({
             type: ActionType.SET_OBSERVATION_MODEL,
             payload: {
-                biomarker: biomarker,
-                model: {upperBound: newValue}
+                upperBound: newValue
             }
         })
     }
@@ -48,39 +41,47 @@ export default function ObservationalModel({biomarker}: { biomarker: string }) {
         dispatch({
             type: ActionType.SET_OBSERVATION_MODEL,
             payload: {
-                biomarker: biomarker,
-                model: {numBleeds: newValue}
+                numBleeds: newValue
             }
         })
     }
 
     const plotError = useAsyncEffectSafely(async () => {
-        setPlot(null)
-        const plot = await rService.getObs(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax);
-        setPlot(plot)
+        if (obsModel.numBleeds >= 1) {
+            setPlot(null)
+            const plot = await rService.getObservationTimesPlot(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax);
+            setPlot(plot)
+        }
     }, [obsModel, state.demography.tmax, state.demography.numIndividuals, obsModel.numBleeds])
 
-    return <Row className={"mb-2"}>
-        <div className={"pb-2"}><SectionError error={plotError}/></div>
-        <Col sm={4}>
-            <Form className={"pt-3 border px-2"}>
-                <h5 className={"pb-2"}>{biomarker}</h5>
-                <InlineFormControl value={obsModel.error}
-                                   handleChange={setModelError}
-                                   label={"Error"}/>
-                <InlineFormControl value={obsModel.lowerBound}
-                                   handleChange={setLowerBound}
-                                   label={"Lower bound"}/>
-                <InlineFormControl value={obsModel.upperBound}
-                                   handleChange={setUpperBound}
-                                   label={"Upper bound"}/>
-                <InlineFormControl value={obsModel.numBleeds}
-                                   handleChange={setNumBleeds}
-                                   label={"Number of bleeds per person"}/>
-            </Form>
-        </Col>
-        <Col>
-            <PlotlyPlot plot={plot} error={plotError}/>
+    return <Row>
+        <Col className={"pt-5"}>
+            <h4>2. Define observational model</h4>
+            <Row className={"mb-2"}>
+                <div className={"pb-2"}>
+                    <SectionError error={plotError}/>
+                </div>
+                <Col>
+                    <Form className={"pt-3 border px-2"}>
+                        <InlineFormControl value={obsModel.error}
+                                           handleChange={setModelError}
+                                           label={"Error"}/>
+                        <InlineFormControl value={obsModel.lowerBound}
+                                           handleChange={setLowerBound}
+                                           label={"Lower bound"}/>
+                        <InlineFormControl value={obsModel.upperBound}
+                                           handleChange={setUpperBound}
+                                           label={"Upper bound"}/>
+                        <InlineFormControl value={obsModel.numBleeds}
+                                           handleChange={setNumBleeds}
+                                           label={"Number of bleeds per person"}/>
+                    </Form>
+                </Col>
+                <Col>
+                    {obsModel.numBleeds >= 1 && <PlotlyPlot plot={plot} error={plotError}/>}
+                    {obsModel.numBleeds < 1 && <div className={"py-5 text-center"}>Choose at least 1 bleed per person</div>}
+                </Col>
+            </Row>
         </Col>
     </Row>
 }

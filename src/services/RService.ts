@@ -1,6 +1,6 @@
 import {REnvironment, WebR} from "webr";
 import {
-    AppState,
+    AppState, BiphasicDecay, Dict, ExposureType,
     ImmunityModel,
     PlotlyProps
 } from "../types";
@@ -11,8 +11,7 @@ export class RService {
     private _webR: WebR
     private _ready = false
 
-
-    private async _generatePlot(plottingCode: string, env?: REnvironment) {
+    private async _generatePlot(plottingCode: string, env?: REnvironment): Promise<PlotlyProps> {
         await this.waitForReady();
         if (!env) {
             env = await new this._webR.REnvironment()
@@ -20,8 +19,7 @@ export class RService {
         const plotlyData = await this._webR.evalRString(`
             p <- ${plottingCode}               
             plotly::plotly_json(p, pretty = FALSE)
-        `, {env})
-        await this._webR.globalShelter.purge()
+        `, {env});
         return JSON.parse(plotlyData)
     }
 
@@ -43,28 +41,35 @@ export class RService {
         this._ready = true
     }
 
-    async getDemography(N: number, maxTime: number, p: number) {
+    async getDemography(N: number, maxTime: number, p: number): Promise<WebRDataJs> {
         await this.waitForReady();
         const result = await this._webR.evalR(`
           birth_times <- rep(1, ${N})
           demography <- serosim::generate_pop_demography(${N}, times = 1:${maxTime}, birth_times = birth_times, removal_min=1, removal_max=${maxTime}, prob_removal=${p})
           demography
           `)
-        return await result.toJs()
+        const js = await result.toJs()
+        await this._webR.destroy(result);
+        return js;
     }
 
     async getDemographyPlot(demography: WebRDataJs): Promise<PlotlyProps> {
         await this.waitForReady();
-        const env = await new this._webR.REnvironment({demography});
-        return await this._generatePlot(`
+        const demographyRObj = await new this._webR.RObject(demography);
+        const env = await new this._webR.REnvironment({demography: demographyRObj});
+        try {
+            return await this._generatePlot(`
                ggplot2::ggplot(as.data.frame(demography)) + 
                 ggplot2::geom_segment(ggplot2::aes(y = i, yend = i, x = birth, xend = removal - 1), linewidth = 2, alpha = 0.2, color = "gray85") + 
                 ggplot2::theme_minimal() + ggplot2::labs(x = "Time in study", y = "Individuals")  + 
                 ggplot2::theme(axis.text.y = ggplot2::element_blank())`, env
-        )
+            )
+        } finally {
+            await this._webR.destroy(demographyRObj)
+        }
     }
 
-    async getImmune(model: ImmunityModel) {
+    async getImmunityPlot(model: ImmunityModel) {
         await this.waitForReady();
         return await this._generatePlot(`
                serosim::plot_biomarker_mediated_protection(0:${model.max}, 
@@ -73,7 +78,7 @@ export class RService {
         )
     }
 
-    async getObs(numBleeds: number, numIndividuals: number, tmax: number) {
+    async getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number) {
         await this.waitForReady();
         const observationTimes = await this._webR.evalR(`
                    do.call(rbind, lapply(1:${numIndividuals}, function(i) {
@@ -85,10 +90,14 @@ export class RService {
                     }))`
         )
         const env = await new this._webR.REnvironment({observation_times: observationTimes});
-        return await this._generatePlot(`
+        try {
+            return await this._generatePlot(`
             ggplot2::ggplot(observation_times) + 
                         ggplot2::geom_point(ggplot2::aes(y = id, x = t), color = "red")
             `, env)
+        } finally {
+            await this._webR.destroy(observationTimes)
+        }
     }
 
     async getIndividualKinetics(demography: WebRDataJs, result: WebRDataJs) {
@@ -99,7 +108,7 @@ export class RService {
                                                      as.data.frame(result$immune_histories_long), subset = 10, as.data.frame(demography))`, env);
     }
 
-    async getImmuneHistories(result: WebRDataJs) {
+    async getImmuneHistories(result: WebRDataJs): Promise<PlotlyProps> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._generatePlot(
@@ -107,7 +116,7 @@ export class RService {
             env);
     }
 
-    async getBiomarkerQuantity(result: WebRDataJs) {
+    async getBiomarkerQuantity(result: WebRDataJs): Promise<PlotlyProps> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._generatePlot(
@@ -115,73 +124,80 @@ export class RService {
             env);
     }
 
-    async getSeroDataJson(result: WebRDataJs) {
+    async getSeroDataJson(result: WebRDataJs): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString("jsonlite::toJSON(result$observed_biomarker_states)", {env})
     }
 
-    async getInfDataJson(result: WebRDataJs) {
+    async getInfDataJson(result: WebRDataJs): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString("jsonlite::toJSON(results$immune_histories_long)", {env})
     }
 
-    async getResultsJson(result: WebRDataJs) {
+    async getResultsJson(result: WebRDataJs): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString("jsonlite::toJSON(result)", {env})
     }
 
-    async runSerosim(state: AppState) {
+    async getKineticsPlot(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>, numIndividuals: number, tmax: number) {
+        await this.waitForReady();
+        const pars = this.getKineticsModelPars(exposureTypes, kinetics);
+        const modelParsKinetics = await new this._webR.RObject(pars);
+
+        const biomarkerMap = await new this._webR.RObject(exposureTypes.map((e, index) => ({
+            exposure_id: index + 1,
+            biomarker_id: 1
+        })));
+        const facetLabels = exposureTypes.map(e => e.exposureType);
+        const facetLabelNames = exposureTypes.map((e, index) => `Exposure: ${index + 1}`);
+        const facetLabeller = await this._webR.evalR(`
+            names(facet_labels) <- facet_label_names
+            return(facet_labels)
+        `, {
+            env: {
+                facet_labels: facetLabels,
+                facet_label_names: facetLabelNames
+            }
+        })
+        const env = await new this._webR.REnvironment({
+            model_pars: modelParsKinetics,
+            biomarker_map: biomarkerMap,
+            facet_labeller: facetLabeller
+        });
+        try {
+            return await this._generatePlot(
+                `serosim::plot_antibody_model(serosim::antibody_model_biphasic, N=${numIndividuals},times =seq(1,${tmax},by=1),
+             model_pars=model_pars, draw_parameters_fn = serosim::draw_parameters_random_fx, biomarker_map=as.data.frame(biomarker_map)) +
+             ggplot2::guides(color = "none") + ggplot2::facet_wrap(~exposure_id,scales="free_y", labeller = ggplot2::as_labeller(facet_labeller), ncol =1)
+            `, env);
+        } finally {
+            await this._webR.destroy(facetLabeller)
+            await this._webR.destroy(biomarkerMap)
+            await this._webR.destroy(modelParsKinetics)
+        }
+    }
+
+    async runSerosim(state: AppState): Promise<WebRDataJs> {
         await this.waitForReady();
 
-        const modelParsKinetics = state.biomarkerExposurePairs.flatMap(p => [{
-            exposure_id: p.exposureType,
-            biomarker_id: p.biomarker,
-            name: "boost_long",
-            mean: state.kinetics[p.biomarker + p.exposureType].boostLong,
-            sd: null,
-            distribution: null
-        },
-            {
-                exposure_id: p.exposureType,
-                biomarker_id: p.biomarker,
-                name: "boost_short",
-                mean: state.kinetics[p.biomarker + p.exposureType].boostShort,
-                sd: null,
-                distribution: null
-            },
-            {
-                exposure_id: p.exposureType,
-                biomarker_id: p.biomarker,
-                name: "wane_long",
-                mean: state.kinetics[p.biomarker + p.exposureType].waneLong,
-                sd: null,
-                distribution: null
-            },
-            {
-                exposure_id: p.exposureType,
-                biomarker_id: p.biomarker,
-                name: "wane_short",
-                mean: state.kinetics[p.biomarker + p.exposureType].waneShort,
-                sd: null,
-                distribution: null
-            }])
+        const modelParsKinetics = this.getKineticsModelPars(state.exposureTypes, state.kinetics);
 
-        const modelParsImmunity = state.biomarkerExposurePairs.flatMap(p => [{
-            exposure_id: p.exposureType,
-            biomarker_id: p.biomarker,
+        const modelParsImmunity = state.exposureTypes.flatMap((e, index) => [{
+            exposure_id: index,
+            biomarker_id: 1,
             name: "biomarker_prot_midpoint",
-            mean: state.immunityModels[p.biomarker].midpoint,
+            mean: state.immunityModel?.midpoint,
             sd: null,
             distribution: null
         },
             {
-                exposure_id: p.exposureType,
-                biomarker_id: p.biomarker,
+                exposure_id: index,
+                biomarker_id: 1,
                 name: "biomarker_prot_width",
-                mean: state.immunityModels[p.biomarker].midpoint,
+                mean: state.immunityModel?.midpoint,
                 sd: null,
                 distribution: null
             }])
@@ -195,30 +211,48 @@ export class RService {
             distribution: "normal"
         }]
 
-        const obsBounds = Object.keys(state.observationalModels).flatMap(b => [{
-            biomarker_id: b,
-            name: "lower_bound",
-            value: state.observationalModels[b].lowerBound
-        },
+        const obsBounds = [
             {
-                biomarker_id: b,
+                biomarker_id: 1,
+                name: "lower_bound",
+                value: state.observationalModel?.lowerBound
+            },
+            {
+                biomarker_id: 1,
                 name: "upper_bound",
-                value: state.observationalModels[b].upperBound
-            }])
+                value: state.observationalModel?.upperBound
+            }];
 
-        const bounds = await new this._webR.RObject(obsBounds);
-        const model_pars = await new this._webR.RObject(modelPars);
-        const env = await new this._webR.REnvironment({
-            demography: state.demography.rObj,
-            model_pars,
-            bounds
-        });
+        const foe = state.exposureTypes.map(p => p.FOE);
         const N = state.demography.numIndividuals
         const tmax = state.demography.tmax
         const numBleeds = 1
-        const result = await this._webR.evalR(`           
+        const numExp = foe.length;
+
+        const localShelter = await new this._webR.Shelter();
+
+        const bounds = await new localShelter.RObject(obsBounds);
+        const model_pars = await new localShelter.RObject(modelPars);
+        const exposures = await new localShelter.RObject(state.exposureTypes.map(e => [e.exposureType, state.biomarker]));
+        const vaccinations = state.exposureTypes.map((e, index) => e.isVax ? index + 1 : -1).filter(n => n > 0);
+        const vaccExposures = await new localShelter.RObject(vaccinations.length > 0 ? vaccinations : null);
+        const vaccAges = await new localShelter.RObject(state.exposureTypes.map(e => e.age || -1));
+
+        const env = await new this._webR.REnvironment({
+            demography: state.demography.rObj,
+            model_pars,
+            bounds,
+            foe,
+            biomarker_map: exposures,
+            vacc_exposures: vaccExposures,
+            vacc_ages: vaccAges
+        });
+
+        let js;
+
+        try {
+            const result = await this._webR.evalR(`           
             simulation_settings <- list("t_start"=1,"t_end"=${tmax})
-            
             observation_times <- do.call(rbind, lapply(1:${N}, function(i) {
                           data.frame(
                             id = i,
@@ -226,18 +260,15 @@ export class RService {
                             b = 1
                           )
                     }))
-                    
-            biomarker_map_original <- data.frame(exposure_id = c("Delta", "Vax"), biomarker_id = c("IgG", "IgG"))
+                                        
+            biomarker_map_original <- data.frame(exposure_id = biomarker_map$X0, biomarker_id = biomarker_map$X1)
             biomarker_map <- serosim::reformat_biomarker_map(biomarker_map_original)
-       
-            foe_pars <- array(0, dim=c(1, ${tmax}, 2))
+            foe_pars <- array(0, dim=c(1, ${tmax}, ${numExp}))
+            
+            for (i in seq_len(${numExp})) {
+                foe_pars[,,i] <- foe[[i]]
+            }
 
-            ## Specify the force of exposure for exposure ID 1 which represents measles natural infection
-            foe_pars[,,1] <- 0.02
-    
-            ## Specify the force of exposure for exposure ID 2 which represents measles vaccination
-            foe_pars[,,2] <- 0.04
-              
             serosim::runserosim(
                 simulation_settings = simulation_settings,
                 demography = as.data.frame(demography),
@@ -253,15 +284,19 @@ export class RService {
             
                 ## Specify other arguments needed
                 VERBOSE = 10,
-                max_events = c(1, 1),
-                vacc_exposures = 2,
-                vacc_age = c(NA, 9),
+                max_events = rep(1, ${numExp}),
+                vacc_exposures = vacc_exposures,
+                vacc_age = vacc_ages,
                 sensitivity = 1,
                 specificity = 1
             )
         `, {env})
-        await this._webR.destroy(result)
-        return await result.toJs()
+            js = await result.toJs();
+            await this._webR.destroy(result);
+        } finally {
+            await localShelter.purge();
+        }
+        return js
     }
 
     async waitForReady(): Promise<boolean> {
@@ -276,5 +311,40 @@ export class RService {
             }, 1000)
         })
     }
-}
 
+    private getKineticsModelPars(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>) {
+        return exposureTypes.flatMap((e, index) => [
+            {
+                exposure_id: index + 1,
+                biomarker_id: 1,
+                name: "boost_long",
+                mean: kinetics[e.exposureType].boostLong,
+                sd: null,
+                distribution: null
+            },
+            {
+                exposure_id: index + 1,
+                biomarker_id: 1,
+                name: "boost_short",
+                mean: kinetics[e.exposureType].boostShort,
+                sd: null,
+                distribution: null
+            },
+            {
+                exposure_id: index + 1,
+                biomarker_id: 1,
+                name: "wane_long",
+                mean: kinetics[e.exposureType].waneLong,
+                sd: null,
+                distribution: null
+            },
+            {
+                exposure_id: index + 1,
+                biomarker_id: 1,
+                name: "wane_short",
+                mean: kinetics[e.exposureType].waneShort,
+                sd: null,
+                distribution: null
+            }])
+    }
+}

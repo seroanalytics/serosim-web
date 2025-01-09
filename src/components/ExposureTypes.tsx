@@ -5,47 +5,49 @@ import {
 } from "react-bootstrap";
 import React, {useContext} from "react";
 import {ActionType, DispatchContext, StateContext} from "../contexts";
-import {BiomarkerExposurePair} from "../types";
-import AddBiomarkerExposureRow from "./AddBiomarkerExposureRow";
+import {ExposureType} from "../types";
+import AddExposureRow from "./AddExposureRow";
 
-export function BiomarkersAndExposureTypes() {
+export function ExposureTypes() {
 
     const state = useContext(StateContext);
     const dispatch = useContext(DispatchContext);
 
-    const remove = (p: BiomarkerExposurePair) => {
+    const remove = (p: ExposureType) => {
         dispatch({
-            type: ActionType.REMOVE_BIOMARKER_EXPOSURE_PAIR,
+            type: ActionType.REMOVE_EXPOSURE_TYPE,
             payload: p
         })
     }
 
     return <Row>
         <Col className={"pt-5"}>
-        <h4>2. Define biomarkers and exposure types</h4>
+        <h4>4. Define exposures</h4>
         <Row className={"pt-3"}>
             <Col>
                 <Table striped bordered>
                     <thead>
                     <tr>
-                        <th>Exposure type</th>
-                        <th>Biomarker</th>
+                        <th>Exposure name</th>
                         <th>FOE</th>
+                        <th>Is vaccination</th>
+                        <th>Eligible age</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
-                    {state.biomarkerExposurePairs.map(p => <tr
-                        key={p.exposureType + p.biomarker}>
+                    {state.exposureTypes.map(p => <tr
+                        key={p.exposureType}>
                         <td>{p.exposureType}</td>
-                        <td>{p.biomarker}</td>
                         <td>{p.FOE}</td>
+                        <td>{p.isVax ? "Yes" : "No"}</td>
+                        <td>{p.age || "NA"}</td>
                         <td><Button variant={"close"} role={"close"}
                                     onClick={() => remove(p)}
                                     color={"red"}
                                     className={"mx-2"}></Button></td>
                     </tr>)}
-                    <AddBiomarkerExposureRow></AddBiomarkerExposureRow>
+                    <AddExposureRow></AddExposureRow>
                     </tbody>
                 </Table>
             </Col>
