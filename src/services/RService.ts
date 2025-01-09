@@ -76,12 +76,12 @@ export class RService {
         }
     }
 
-    async getImmunityPlot(model: ImmunityModel) {
+    async getImmunityPlot(max: number, midpoint: number, variance: number) {
         await this.waitForReady();
         return await this._generatePlot(`
-               serosim::plot_biomarker_mediated_protection(0:${model.max}, 
-                        biomarker_prot_midpoint=${model.midpoint},
-                        biomarker_prot_width=${model.variance})`
+               serosim::plot_biomarker_mediated_protection(0:${max}, 
+                        biomarker_prot_midpoint=${midpoint},
+                        biomarker_prot_width=${variance})`
         )
     }
 

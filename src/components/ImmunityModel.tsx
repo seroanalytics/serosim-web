@@ -52,9 +52,9 @@ export default function ImmunityModel() {
 
     const plotError = useAsyncEffectSafely(async () => {
         setPlot(null)
-        const plot = await rService.getImmunityPlot(immunityModel);
+        const plot = await rService.getImmunityPlot(immunityModel.max, immunityModel.midpoint, immunityModel.variance);
         setPlot(plot)
-    }, [rService, immunityModel])
+    }, [rService, immunityModel.max, immunityModel.variance, immunityModel.midpoint])
 
 
     return <Row className={"mb-2"}>
