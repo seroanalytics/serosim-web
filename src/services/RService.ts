@@ -36,7 +36,7 @@ export class RService {
         console.log("Initialising R")
         await this._webR.init();
         await this._webR.installPackages(['plotly', 'ggplot2', 'viridis']);
-        await this._webR.installPackages(['serosim'], {repos: ["http://127.0.0.1:9090/repo", "https://repo.r-wasm.org/"]});
+        await this._webR.installPackages(['serosim'], {repos: [`http://${window.location.host}/repo`, "https://repo.r-wasm.org/"]});
 
         this._ready = true
     }

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$#" -eq 1 ]; then
+    export HTTP_HOST=$1
+else
+    echo "Usage: HOSTNAME"
+    echo "e.g. docker run ... serosim.seroanalytics.org"
+    exit 1
+fi
+
+echo "We will listen on port 80 (http)"
+echo "with hostname $HTTP_HOST"
+
+envsubst '$HTTP_HOST' \
+         < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+
+exec nginx -g "daemon off;"

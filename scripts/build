@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -ex
+
+HERE=$(dirname $0)
+. $HERE/common
+
+npm run build
+
+docker build --pull \
+       --tag $DOCKER_COMMIT_TAG \
+       .
+
+docker tag $DOCKER_COMMIT_TAG $DOCKER_BRANCH_TAG

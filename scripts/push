@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+HERE=$(dirname $0)
+. $HERE/common
+
+if [[ "$GIT_BRANCH" == "main" ]]; then
+  docker push $DOCKER_BRANCH_TAG
+  docker push $DOCKER_COMMIT_TAG
+fi

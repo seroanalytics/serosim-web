@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e
+
+PACKAGE_ROOT=$(realpath $HERE/..)
+PACKAGE_NAME=serosim-web
+PACKAGE_ORG=seroanalytics
+
+if [[ -v "GITHUB_SHA" ]]; then
+    GIT_SHA=${GITHUB_SHA:0:7}
+else
+    GIT_SHA=$(git rev-parse --short=7 HEAD)
+fi
+
+if [[ -v "BRANCH_NAME" ]]; then
+    GIT_BRANCH=${BRANCH_NAME}
+else
+    GIT_BRANCH=$(git symbolic-ref --short HEAD)
+fi
+
+DOCKER_COMMIT_TAG="${PACKAGE_ORG}/${PACKAGE_NAME}:${GIT_SHA}"
+DOCKER_BRANCH_TAG="${PACKAGE_ORG}/${PACKAGE_NAME}:${GIT_BRANCH}"
+
+echo  $GIT_SHA

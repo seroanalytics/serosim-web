@@ -1,0 +1,11 @@
+Package: serosim
+Version: 0.0.0.9000
+Depends: R (>= 3.5.0)
+Imports: data.table, dplyr, ggplot2, reshape2, stats, tidyr, abind,
+        foreach, parallel, doParallel
+LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+Suggests: bayesplot, coda, devtools, ggpubr, knitr, patchwork, plyr,
+        remotes, rmarkdown, rstan, testthat (>= 3.0.0), tidyverse,
+        viridis
+License: GPL (>= 3)
+MD5sum: 5452b5320e96f27c18ef24302c392302
