@@ -23,12 +23,10 @@ export interface BiphasicDecay {
     waneLong: number
 }
 
-export interface Continuous {
+export interface ObservationalModel {
     error: number
     numBleeds: number
-}
-
-export interface ContinuousBounded extends Continuous {
+    type: "bounded" | "unbounded"
     lowerBound: number
     upperBound: number
 }
@@ -58,7 +56,7 @@ export interface AppState {
     biomarker: string
     exposureTypes: ExposureType[]
     kinetics: Dict<BiphasicDecay>
-    observationalModel: ContinuousBounded
+    observationalModel: ObservationalModel
     immunityModel: ImmunityModel
     demography: Demography
     genericErrors: string[]
@@ -66,3 +64,25 @@ export interface AppState {
     result: any
     steps: Step[]
 }
+
+export enum ActionType {
+    ERROR_ADDED = "ERROR_ADDED",
+    ERROR_DISMISSED = "ERROR_DISMISSED",
+    CLEAR_ALL_ERRORS = "CLEAR_ALL_ERRORS",
+    ADD_EXPOSURE_TYPE = "ADD_EXPOSURE_TYPE",
+    REMOVE_EXPOSURE_TYPE = "REMOVE_EXPOSURE_TYPE",
+    SET_BIOMARKER = "SET_BIOMARKER",
+    SET_IMMUNITY_MODEL = "SET_IMMUNITY_MODEL",
+    SET_OBSERVATION_MODEL = "SET_OBSERVATION_MODEL",
+    SET_KINETICS = "SET_KINETICS",
+    SET_RESULTS = "SET_RESULTS",
+    ADD_DEMOGRAPHY = "ADD_DEMOGRAPHY",
+    R_READY = "R_READY",
+    LOAD_SCENARIO = "LOAD_SCENARIO"
+}
+
+export interface Action {
+    type: ActionType
+    payload: any
+}
+

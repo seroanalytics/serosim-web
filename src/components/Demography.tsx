@@ -1,19 +1,17 @@
-import React, {useState, useContext} from "react";
-import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
+import React, {useState} from "react";
+import {ActionType} from "../types";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import SectionError from "./SectionError";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
+import {useAppContext} from "../services/AppContextProvider";
 
 export function Demography() {
 
     const [plot, setPlot] = useState<any>(null);
 
-    const rService = useContext(RContext);
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
-
+    const {state, dispatch, rService} = useAppContext();
     const demography = state.demography
 
     const demoError = useAsyncEffectSafely(async () => {
@@ -81,9 +79,9 @@ export function Demography() {
                     </Form>
                 </Col>
                 <Col>
-                    {(demography.numIndividuals >0 && demography.tmax > 0) && <PlotlyPlot plot={plot}
+                    {(demography.numIndividuals > 0 && demography.tmax > 0) && <PlotlyPlot plot={plot}
                                 error={demoError}/>}
-                    {(demography.numIndividuals < 1 || demography.tmax < 1) &&
+                    {(!demography.numIndividuals || demography.numIndividuals < 1 || !demography.tmax || demography.tmax < 1) &&
                         <div className={"py-5 text-center"}>Choose a number of
                             individuals and max time greater than 0</div>}
                 </Col>

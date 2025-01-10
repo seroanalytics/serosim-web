@@ -1,12 +1,11 @@
 import React, {useContext} from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {ExposureType} from "../types";
-import {ActionType, DispatchContext, StateContext} from "../contexts";
+import {ExposureType, ActionType} from "../types";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function BiphasicDecay({exposureType}: { exposureType: ExposureType }) {
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
+    const {state, dispatch} = useAppContext();
     const model = state.kinetics[exposureType.exposureType]
 
     const setBoostLong = (newValue: number) => {

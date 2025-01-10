@@ -2,13 +2,9 @@ import {
     AppState,
     ExposureType,
     BiphasicDecay,
-    ContinuousBounded,
-    ImmunityModel
+    ImmunityModel,
+    ObservationalModel, Action, ActionType
 } from "./types";
-import {
-    Action,
-    ActionType
-} from "./contexts";
 import {scenarios} from "./scenarios";
 
 
@@ -92,7 +88,8 @@ function setBiomarker(state: AppState, payload: string) {
             error: 0,
             lowerBound: 0,
             upperBound: 0,
-            numBleeds: 1
+            numBleeds: 0,
+            type: "unbounded"
         }
     }
     return newState
@@ -118,7 +115,7 @@ function setImmunityModel(state: AppState, payload: ImmunityModel) {
     return newState
 }
 
-function setObservationalModel(state: AppState, payload: ContinuousBounded) {
+function setObservationalModel(state: AppState, payload: ObservationalModel) {
     const newState = {...state, result: null}
     newState.observationalModel = {...state.observationalModel, ...payload}
     return newState

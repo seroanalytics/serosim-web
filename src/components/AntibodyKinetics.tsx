@@ -1,15 +1,14 @@
 import {Col, Row} from "react-bootstrap";
-import React, {useContext, useState} from "react";
-import {RContext, StateContext} from "../contexts";
+import React, {useState} from "react";
 import BiphasicDecay from "./BiphasicDecay";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {PlotlyProps} from "../types";
 import SectionError from "./SectionError";
+import {useAppContext} from "../services/AppContextProvider";
 
 export function AntibodyKinetics() {
-    const state = useContext(StateContext);
-    const rService = useContext(RContext);
+    const {state, rService} = useAppContext();
     const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     const plotError = useAsyncEffectSafely(async () => {

@@ -1,17 +1,16 @@
 import {Button, Col, Row} from "react-bootstrap";
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {PlotlyPlot} from "./PlotlyPlot";
-import {RContext, StateContext} from "../contexts";
 import {PlotlyProps} from "../types";
 import SectionError from "./SectionError";
 import RunSerosim from "./RunSerosim";
 import {DownloadCloudIcon} from "lucide-react";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {ScaleLoader} from "react-spinners";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function Results() {
-    const state = useContext(StateContext)
-    const rService = useContext(RContext)
+    const {state, rService} = useAppContext();
 
     const [kinetics, setKinetics] = useState<PlotlyProps | null>(null)
     const [quantity, setQuantity] = useState<PlotlyProps | null>(null)
