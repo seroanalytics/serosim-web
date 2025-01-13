@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import {ExposureType, ActionType} from "../types";
