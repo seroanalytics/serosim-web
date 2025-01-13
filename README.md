@@ -2,6 +2,7 @@
 
 # SeroSim for the web
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![codecov](https://codecov.io/gh/seroanalytics/serosim-web/graph/badge.svg?token=iQbSM8mw6C)](https://codecov.io/gh/seroanalytics/serosim-web)
 ![Docker Image Version](https://img.shields.io/docker/v/seroanalytics/serosim-web?logo=docker)
 ![GitHub License](https://img.shields.io/github/license/seroanalytics/serosim-web)
 
