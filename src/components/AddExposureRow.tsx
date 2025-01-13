@@ -1,11 +1,11 @@
 import {Button, Form} from "react-bootstrap";
-import React, {useContext, useState} from "react";
-import {ActionType, DispatchContext, StateContext} from "../contexts";
+import React, {useState} from "react";
+import {ActionType} from "../types";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function AddExposureRow() {
 
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
+    const {state, dispatch} = useAppContext();
 
     const [exposureType, setExposureType] = useState("");
     const [FOE, setFOE] = useState(0);

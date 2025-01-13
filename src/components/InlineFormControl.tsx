@@ -22,12 +22,13 @@ export default function InlineFormControl({value, handleChange, label, type = "f
 
     return <Form.Group className="row g-3 mb-3 align-items-center">
         <Col className={"text-end"}>
-            <FormLabel>
+            <FormLabel htmlFor={label}>
                 {label}
             </FormLabel>
         </Col>
         <Col>
-            <Form.Control type={type !== "string" ? "number": "text"} value={value}
+            <Form.Control id={label}
+                          type={type !== "string" ? "number": "text"} value={ (value || value === 0) ? value : ""}
                           onChange={handleChangeEvent}/>
         </Col>
     </Form.Group>

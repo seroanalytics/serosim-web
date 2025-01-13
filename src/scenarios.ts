@@ -47,7 +47,7 @@ const initialDemography = {
     requireRecalculation: true
 }
 
-const measles = {
+const measles: AppState = {
     genericErrors: [],
     biomarker: "IgG",
     exposureTypes: [
@@ -89,7 +89,8 @@ const measles = {
         upperBound: 100,
         lowerBound: 1,
         numBleeds: 3,
-        error: 1
+        error: 1,
+        type: "bounded"
     },
     immunityModel: {
         max: 14,
@@ -110,7 +111,8 @@ export const empty: AppState = {
         lowerBound: 0,
         upperBound: 0,
         numBleeds: 0,
-        error: 0
+        error: 0,
+        type: "unbounded"
     },
     immunityModel: {
         max: 0,

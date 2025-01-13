@@ -2,15 +2,27 @@ import {REnvironment, WebR} from "webr";
 import {
     AppState,
     BiphasicDecay,
-    ContinuousBounded,
     Dict,
     ExposureType,
-    ImmunityModel,
+    ImmunityModel, ObservationalModel,
     PlotlyProps
 } from "../types";
 import {WebRDataJs} from "webr/dist/webR/robj";
 
-export class RService {
+export interface RService {
+
+    getKineticsPlot(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+    getDemography(numIndividuals: number, tmax: number, pRemoval: number): Promise<WebRDataJs>;
+    getDemographyPlot(demographyObj: WebRDataJs): Promise<PlotlyProps>;
+    getImmunityPlot(max: number, midpoint: number, variance: number): Promise<PlotlyProps>;
+    getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+    getBiomarkerQuantity(result: WebRDataJs): Promise<PlotlyProps>;
+    getIndividualKinetics(demography: WebRDataJs, result: WebRDataJs): Promise<PlotlyProps>;
+    getResultsJson(result: WebRDataJs): Promise<string>;
+    runSerosim(state: AppState): Promise<WebRDataJs>;
+}
+
+export class WebRService implements RService {
 
     private _webR: WebR
     private _ready = false
@@ -33,6 +45,7 @@ export class RService {
     }
 
     close() {
+        console.log("R worker closed");
         this._webR.close()
     }
 
@@ -191,6 +204,7 @@ export class RService {
             sd: 1,
             distribution: "normal"
         }]
+        const bounds = this.getObservationalBounds(state.observationalModel);
 
         const foe = state.exposureTypes.map(p => p.FOE);
         const N = state.demography.numIndividuals
@@ -209,6 +223,8 @@ export class RService {
             vacc_ages: vaccAges,
             model_pars: modelPars,
             foe,
+            bounded: state.observationalModel.type === "bounded",
+            bounds
         });
 
         const result = await this._webR.evalR(`           
@@ -226,6 +242,8 @@ export class RService {
             for (i in seq_len(${numExp})) {
                 foe_pars[,,i] <- foe[[i]]
             }
+            
+            obs_model <- ifelse(bounded, serosim::observation_model_continuous_bounded_noise, serosim::observation_model_continuous_noise)
 
             serosim::runserosim(
                 simulation_settings = simulation_settings,
@@ -237,11 +255,12 @@ export class RService {
                 exposure_model = serosim::exposure_model_simple_FOE,
                 immunity_model = serosim::immunity_model_vacc_ifxn_biomarker_prot,
                 antibody_model = serosim::antibody_model_biphasic,
-                observation_model = serosim::observation_model_continuous_noise,
+                observation_model = obs_model,
                 draw_parameters = serosim::draw_parameters_random_fx,
             
                 ## Specify other arguments needed
                 VERBOSE = 10,
+                bounds = bounds,
                 max_events = rep(1, ${numExp}),
                 vacc_exposures = vacc_exposures,
                 vacc_age = vacc_ages,
@@ -331,7 +350,7 @@ export class RService {
             }])
     }
 
-    private getObservationalBounds(observationalModel: ContinuousBounded) {
+    private getObservationalBounds(observationalModel: ObservationalModel) {
         return [
             {
                 biomarker_id: 1,

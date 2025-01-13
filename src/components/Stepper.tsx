@@ -1,12 +1,12 @@
 import {Col, Row} from "react-bootstrap";
-import {useContext} from "react";
-import {StateContext} from "../contexts";
 import {Step} from "../types";
+import {useAppContext} from "../services/AppContextProvider";
 
 function StepButton({name, num, complete, ready}: Step) {
     let className = "btn rounded-circle";
 
-    const state = useContext(StateContext);
+    const {state} = useAppContext();
+
     const isReady = ready(state)
     if (complete(state)) {
         className += " btn-primary"
@@ -26,7 +26,7 @@ function StepButton({name, num, complete, ready}: Step) {
 }
 
 export default function Stepper() {
-    const state = useContext(StateContext);
+    const {state} = useAppContext();
     return <Row id="stepper" className={"my-5"}>
         {state.steps.map(step => {
             const components = [

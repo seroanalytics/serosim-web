@@ -1,8 +1,8 @@
-import React, {useContext} from "react";
+import React from "react";
 import Plot from "react-plotly.js"
 import {PlotlyProps} from "../types";
 import {ScaleLoader} from "react-spinners";
-import {StateContext} from "../contexts";
+import {useAppContext} from "../services/AppContextProvider";
 
 export function PlotlyPlot({plot, error, hasTitle}: {
     plot: PlotlyProps | null,
@@ -10,7 +10,7 @@ export function PlotlyPlot({plot, error, hasTitle}: {
     hasTitle?: boolean
 }) {
 
-    const state = useContext(StateContext);
+    const {state} = useAppContext();
 
     let message = "Generating plot";
     if (!state.rReady) {

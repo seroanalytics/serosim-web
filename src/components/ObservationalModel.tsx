@@ -1,17 +1,16 @@
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
-import {ContinuousBounded, PlotlyProps} from "../types";
+import {PlotlyProps, ActionType} from "../types";
 import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
+import InlineFormSelect from "./InlineFormSelect";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function ObservationalModel() {
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
-    const obsModel = state.observationalModel as ContinuousBounded;
-    const rService = useContext(RContext);
+    const {state, dispatch, rService} = useAppContext();
+    const obsModel = state.observationalModel;
     const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     const setModelError = (newValue: number) => {
@@ -46,6 +45,15 @@ export default function ObservationalModel() {
         })
     }
 
+    const setType = (newValue: string) => {
+        dispatch({
+            type: ActionType.SET_OBSERVATION_MODEL,
+            payload: {
+                type: newValue
+            }
+        })
+    }
+
     const plotError = useAsyncEffectSafely(async () => {
         if (obsModel.numBleeds >= 1) {
             setPlot(null)
@@ -66,21 +74,37 @@ export default function ObservationalModel() {
                         <InlineFormControl value={obsModel.error}
                                            handleChange={setModelError}
                                            label={"Error"}/>
-                        <InlineFormControl value={obsModel.lowerBound}
-                                           handleChange={setLowerBound}
-                                           label={"Lower bound"}/>
-                        <InlineFormControl value={obsModel.upperBound}
-                                           handleChange={setUpperBound}
-                                           label={"Upper bound"}/>
                         <InlineFormControl value={obsModel.numBleeds}
                                            type={"int"}
                                            handleChange={setNumBleeds}
                                            label={"Number of bleeds per person"}/>
+                        <InlineFormSelect value={obsModel.type}
+                                          handleChange={setType}
+                                          label={"Observation function"}>
+                            <option value={"unbounded"}>
+                                Continuous-unbounded
+                            </option>
+                            <option value={"bounded"}>
+                                Continuous-bounded
+                            </option>
+                        </InlineFormSelect>
+                        {obsModel.type === "bounded" &&
+                            <InlineFormControl value={obsModel.lowerBound}
+                                               handleChange={setLowerBound}
+                                               label={"Lower bound"}/>}
+                        {obsModel.type === "bounded" &&
+                            <InlineFormControl value={obsModel.upperBound}
+                                               handleChange={setUpperBound}
+                                               label={"Upper bound"}/>
+                        }
                     </Form>
                 </Col>
                 <Col>
-                    {obsModel.numBleeds >= 1 && <PlotlyPlot plot={plot} error={plotError}/>}
-                    {obsModel.numBleeds < 1 && <div className={"py-5 text-center"}>Choose at least 1 bleed per person</div>}
+                    {obsModel.numBleeds >= 1 &&
+                        <PlotlyPlot plot={plot} error={plotError}/>}
+                    {obsModel.numBleeds < 1 &&
+                        <div className={"py-5 text-center"}>Choose at least 1
+                            bleed per person</div>}
                 </Col>
             </Row>
         </Col>

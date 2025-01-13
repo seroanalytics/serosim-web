@@ -1,17 +1,15 @@
-import React, {useContext, useState} from "react";
+import React, {useState} from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
 import {PlotlyPlot} from "./PlotlyPlot";
-import {PlotlyProps} from "../types";
+import {PlotlyProps, ActionType} from "../types";
 import SectionError from "./SectionError";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function ImmunityModel() {
 
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
-    const rService = useContext(RContext);
+    const {state, dispatch, rService} = useAppContext();
 
     const immunityModel = state.immunityModel;
     const [plot, setPlot] = useState<PlotlyProps | null>(null);

@@ -1,13 +1,12 @@
 import {Button, Col, Row} from "react-bootstrap";
-import React, {useContext, useState} from "react";
-import {ActionType, DispatchContext, RContext, StateContext} from "../contexts";
+import React, {useState} from "react";
+import {ActionType} from "../types";
 import {ScaleLoader} from "react-spinners";
 import SectionError from "./SectionError";
+import {useAppContext} from "../services/AppContextProvider";
 
 export default function RunSerosim() {
-    const dispatch = useContext(DispatchContext);
-    const state = useContext(StateContext);
-    const rService = useContext(RContext);
+    const {state, dispatch, rService} = useAppContext();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");

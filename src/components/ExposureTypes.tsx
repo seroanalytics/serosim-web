@@ -3,15 +3,14 @@ import {
     Col,
     Row, Table,
 } from "react-bootstrap";
-import React, {useContext} from "react";
-import {ActionType, DispatchContext, StateContext} from "../contexts";
-import {ExposureType} from "../types";
+import React from "react";
+import {ExposureType, ActionType} from "../types";
 import AddExposureRow from "./AddExposureRow";
+import {useAppContext} from "../services/AppContextProvider";
 
 export function ExposureTypes() {
 
-    const state = useContext(StateContext);
-    const dispatch = useContext(DispatchContext);
+    const {state, dispatch} = useAppContext();
 
     const remove = (p: ExposureType) => {
         dispatch({
