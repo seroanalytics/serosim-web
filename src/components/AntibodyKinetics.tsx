@@ -1,11 +1,11 @@
 import {Col, Row} from "react-bootstrap";
 import React, {useState} from "react";
-import BiphasicDecay from "./BiphasicDecay";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {PlotlyProps} from "../types";
 import SectionError from "./SectionError";
 import {useAppContext} from "../services/AppContextProvider";
+import KineticsModel from "./KineticsModel";
 
 export function AntibodyKinetics() {
     const {state, rService} = useAppContext();
@@ -31,8 +31,8 @@ export function AntibodyKinetics() {
                 <SectionError error={plotError}/>
             </div>
             <Col>
-                {state.exposureTypes.map(e => <BiphasicDecay
-                    key={e.exposureType} exposureType={e}/>)}
+                {state.exposureTypes.map(e => <KineticsModel
+                    key={e.exposureType} exposureType={e.exposureType}/>)}
             </Col>
             <Col>
                 <PlotlyPlot plot={plot} error={plotError}></PlotlyPlot>

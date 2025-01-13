@@ -28,7 +28,7 @@ const steps: Step[] = [
     {
         num: 5,
         name: "Define kinetics",
-        complete: (state: AppState) => state.exposureTypes.length > 0 && Object.values(state.kinetics).every(k => k.boostLong > 0 || k.boostShort > 0 || k.waneShort > 0 || k.waneLong > 0),
+        complete: (state: AppState) => state.exposureTypes.length > 0, //&& Object.values(state.kinetics).every(k => k.boostLong > 0 || k.boostShort > 0 || k.waneShort > 0 || k.waneLong > 0),
         ready: (state: AppState) => state.exposureTypes.length > 0
     },
     {
@@ -73,16 +73,22 @@ const measles: AppState = {
     rReady: false,
     kinetics: {
         "Vax": {
-            waneShort: 0,
-            waneLong: 0,
-            boostShort: 4,
-            boostLong: 14
+            type: "biphasic",
+            model: {
+                waneShort: 0,
+                waneLong: 0,
+                boostShort: 4,
+                boostLong: 14
+            }
         },
         "Delta": {
-            waneShort: 0,
-            waneLong: 0,
-            boostShort: 4,
-            boostLong: 14
+            type: "biphasic",
+            model: {
+                waneShort: 0,
+                waneLong: 0,
+                boostShort: 4,
+                boostLong: 14
+            }
         }
     },
     observationalModel: {
