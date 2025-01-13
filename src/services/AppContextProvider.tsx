@@ -34,20 +34,22 @@ export const useAppContext = () => {
 
 export const AppContextProvider = ({children}: { children: ReactNode }) => {
     const rService = useMemo(() => {
-        return new WebRService();
+        const rService = new WebRService();
+        rService.init()
+        return rService
     }, []);
     const [state, dispatch] = useReducer(rootReducer, empty);
 
     useEffect(() => {
         rService
-            .init()
+            .waitForReady()
             .then(() => {
                 dispatch({
                     type: ActionType.R_READY,
                     payload: true
                 });
             });
-    }, [rService]);
+    }, [rService, dispatch]);
 
 
     return <AppContext.Provider

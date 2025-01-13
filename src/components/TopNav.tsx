@@ -1,11 +1,7 @@
 import {Container, Navbar} from "react-bootstrap";
 import ThemeSwitch from "./ThemeSwitch";
 import React from "react";
-
-interface Props {
-    theme: string
-    setTheme: (theme: string) => void
-}
+import usePersistedState from "../hooks/usePersistedState";
 
 function GithubLogo() {
     return <svg
@@ -15,9 +11,9 @@ function GithubLogo() {
     </svg>
 }
 
-export default function TopNav({
-                                   theme, setTheme
-                               }: Props) {
+export default function TopNav() {
+
+    const [theme, setTheme] = usePersistedState<string>("theme", "dark") as [string, (newVal: string) => void];
 
     return <Navbar expand="lg" className={"bg-light"}>
         <Container fluid>

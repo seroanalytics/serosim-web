@@ -3,7 +3,6 @@ import React from "react";
 import {Demography} from "./Demography";
 import {Alert, Container} from "react-bootstrap";
 import TopNav from "./TopNav";
-import usePersistedState from "../hooks/usePersistedState";
 import {ExposureTypes} from "./ExposureTypes";
 import {AntibodyKinetics} from "./AntibodyKinetics";
 import ObservationalModel from "./ObservationalModel";
@@ -15,8 +14,6 @@ import {AppContextProvider} from "../services/AppContextProvider";
 import LoadScenarios from "./LoadScenarios";
 
 const App = () => {
-
-    const [theme, setTheme] = usePersistedState<string>("theme", "dark");
 
     return (
         <AppContextProvider>
@@ -32,8 +29,7 @@ const App = () => {
                 The webR project is under active development, and things
                 might break!
             </Alert>
-            <TopNav theme={theme as string}
-                    setTheme={setTheme as (newState: string) => void}></TopNav>
+            <TopNav/>
             <Container fluid={"sm"} className={"py-5"}>
 
                 <p>Serosim is a an R package for simulating
