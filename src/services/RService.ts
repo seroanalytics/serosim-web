@@ -58,7 +58,7 @@ export class WebRService implements RService {
     }
 
     private getRepoUrl = () => {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
             return "http://localhost:9090";
         }
         return `https://${window.location.host}/repo`;
@@ -189,7 +189,7 @@ export class WebRService implements RService {
                 facet_labeller: facetLabeller
             });
             return await this._generatePlot(
-                `serosim::plot_antibody_model(serosim::${func}, N=${numIndividuals},times =seq(1,${tmax},by=1),
+                `serosim::plot_antibody_model(serosim::${func}, N=${numIndividuals},times=seq(1,${tmax},by=1),
              model_pars=model_pars, draw_parameters_fn = serosim::draw_parameters_random_fx, biomarker_map=as.data.frame(biomarker_map)) +
              ggplot2::guides(color = "none") + ggplot2::facet_wrap(~exposure_id,scales="free_y", labeller = ggplot2::as_labeller(facet_labeller), ncol =1)
             `, env);

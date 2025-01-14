@@ -27,6 +27,12 @@ jobs:
       - name: 📥 Install deps
         run: npm install --frozen-lockfile
 
+      - name: ⎔ Run dependencies
+        run: ./scripts/run-dev-dependencies.R &
+
+      - name: 🔎 Test WebR
+        run: npm run rtest
+
       - name: 🔎 Test
         run: npm run test
 
