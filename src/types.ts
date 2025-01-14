@@ -16,24 +16,11 @@ export interface ExposureType {
     age: number | null
 }
 
-export interface BiphasicDecay {
+export interface KineticsModel {
     boostLong: number
     boostShort: number
     waneShort: number
     waneLong: number
-}
-
-export interface Teunis {
-    tPeak: number
-    peak: number
-    k: number
-    v: number
-    r: number
-}
-
-export interface KineticsModel {
-    type: "biphasic" | "teunis"
-    model: BiphasicDecay | Teunis
 }
 
 export interface ObservationalModel {
@@ -68,6 +55,7 @@ export interface Step {
 export interface AppState {
     biomarker: string
     exposureTypes: ExposureType[]
+    kineticsFunction: "monophasic" | "biphasic"
     kinetics: Dict<KineticsModel>
     observationalModel: ObservationalModel
     immunityModel: ImmunityModel
@@ -87,7 +75,7 @@ export enum ActionType {
     SET_BIOMARKER = "SET_BIOMARKER",
     SET_IMMUNITY_MODEL = "SET_IMMUNITY_MODEL",
     SET_OBSERVATION_MODEL = "SET_OBSERVATION_MODEL",
-    SET_KINETICS_TYPE = "SET_KINETICS_TYPE",
+    SET_KINETICS_FUNCTION = "SET_KINETICS_FUNCTION",
     SET_KINETICS = "SET_KINETICS",
     SET_RESULTS = "SET_RESULTS",
     ADD_DEMOGRAPHY = "ADD_DEMOGRAPHY",

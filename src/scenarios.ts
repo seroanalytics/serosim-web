@@ -71,24 +71,19 @@ const measles: AppState = {
         requireRecalculation: true
     },
     rReady: false,
+    kineticsFunction: "biphasic",
     kinetics: {
         "Vax": {
-            type: "biphasic",
-            model: {
                 waneShort: 0,
                 waneLong: 0,
                 boostShort: 4,
                 boostLong: 14
-            }
         },
         "Delta": {
-            type: "biphasic",
-            model: {
                 waneShort: 0,
                 waneLong: 0,
                 boostShort: 4,
                 boostLong: 14
-            }
         }
     },
     observationalModel: {
@@ -113,6 +108,7 @@ export const empty: AppState = {
     demography: initialDemography,
     rReady: false,
     kinetics: {},
+    kineticsFunction: "monophasic",
     observationalModel: {
         lowerBound: 0,
         upperBound: 0,

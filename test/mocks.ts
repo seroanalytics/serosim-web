@@ -17,13 +17,10 @@ export function mockObsModel(model: Partial<ObservationalModel> = {}): Observati
 
 export function mockKineticsModel(model: Partial<KineticsModel> = {}): KineticsModel {
     return {
-        type: "biphasic",
-        model: {
-            waneShort: 0,
-            waneLong: 0,
-            boostShort: 0,
-            boostLong: 0
-        },
+        waneShort: 0,
+        waneLong: 0,
+        boostShort: 0,
+        boostLong: 0,
         ...model
     }
 }

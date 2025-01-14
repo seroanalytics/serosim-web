@@ -2,7 +2,7 @@ import {
     AppState,
     ExposureType,
     ImmunityModel,
-    ObservationalModel, Action, ActionType, BiphasicDecay, Teunis
+    ObservationalModel, Action, ActionType, KineticsModel
 } from "./types";
 import {scenarios} from "./scenarios";
 
@@ -42,8 +42,8 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
             return setImmunityModel(state, action.payload)
         case ActionType.SET_OBSERVATION_MODEL:
             return setObservationalModel(state, action.payload)
-        case ActionType.SET_KINETICS_TYPE:
-            return setKineticsFunction(state, action.payload)
+        case ActionType.SET_KINETICS_FUNCTION:
+            return {...state, kineticsFunction: action.payload}
         case ActionType.SET_KINETICS:
             return setKinetics(state, action.payload)
         case ActionType.SET_BIOMARKER:
@@ -99,13 +99,10 @@ function addExposureType(state: AppState, payload: ExposureType) {
     const newState = {...state, result: null}
     if (!newState.kinetics[payload.exposureType]) {
         newState.kinetics[payload.exposureType] = {
-            type: "biphasic",
-            model: {
                 boostLong: 0,
                 boostShort: 0,
                 waneShort: 0,
                 waneLong: 0
-            }
         }
     }
     newState.exposureTypes = [...state.exposureTypes, payload]
@@ -124,42 +121,12 @@ function setObservationalModel(state: AppState, payload: ObservationalModel) {
     return newState
 }
 
-function setKineticsFunction(state: AppState, payload: {
-    exposureType: string,
-    type: "biphasic" | "teunis"
-}) {
-    const newState = {...state, result: null}
-    newState.kinetics = {...state.kinetics}
-    if (newState.kinetics[payload.exposureType].type === payload.type) {
-        return newState
-    }
-    newState.kinetics[payload.exposureType].type = payload.type
-    if (payload.type === "biphasic") {
-        newState.kinetics[payload.exposureType].model = {
-            waneLong: 0,
-            waneShort: 0,
-            boostShort: 0,
-            boostLong: 0
-        }
-    } else if (payload.type === "teunis") {
-        newState.kinetics[payload.exposureType].model = {
-            peak: 0,
-            tPeak: 0,
-            k: 0,
-            v: 0,
-            r: 0
-        }
-    }
-    return newState
-}
-
-
 function setKinetics(state: AppState, payload: {
     exposureType: string,
-    model: BiphasicDecay | Teunis
+    model: KineticsModel
 }) {
     const newState = {...state, result: null}
     newState.kinetics = {...state.kinetics}
-    newState.kinetics[payload.exposureType].model = {...state.kinetics[payload.exposureType].model, ...payload.model}
+    newState.kinetics[payload.exposureType] = {...state.kinetics[payload.exposureType], ...payload.model}
     return newState
 }

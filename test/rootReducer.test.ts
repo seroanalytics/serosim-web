@@ -4,34 +4,17 @@ import {rootReducer} from "../src/rootReducer";
 
 describe("rootReducer", () => {
 
-    it("updates kinetic model type", () => {
+    it("updates kinetics function", () => {
         const action: Action = {
-            type: ActionType.SET_KINETICS_TYPE,
-            payload: {
-                exposureType: "vax",
-                type: "teunis"
-            }
+            type: ActionType.SET_KINETICS_FUNCTION,
+            payload: "monophasic"
         }
-        const state = mockAppState({
-            kinetics: {
-                "vax": mockKineticsModel()
-            }
-        });
-
+        const state = mockAppState();
         const result = rootReducer(state, action);
-        expect(result.kinetics["vax"]).toEqual({
-            type: "teunis",
-            model: {
-                tPeak: 0,
-                peak: 0,
-                v: 0,
-                k: 0,
-                r: 0
-            }
-        })
+        expect(result.kineticsFunction).toBe("monophasic");
     });
 
-    it("updates kinetic model properties", () => {
+    it("updates kinetic model parameters", () => {
         const action: Action = {
             type: ActionType.SET_KINETICS,
             payload: {
@@ -46,13 +29,10 @@ describe("rootReducer", () => {
         });
         const result = rootReducer(state, action);
         expect(result.kinetics["vax"]).toEqual({
-            type: "biphasic",
-            model: {
-                boostLong: 2,
-                boostShort: 0,
-                waneLong: 0,
-                waneShort: 0
-            }
+            boostLong: 2,
+            boostShort: 0,
+            waneLong: 0,
+            waneShort: 0
         })
     });
 });
