@@ -75,15 +75,15 @@ const measles: AppState = {
     kinetics: {
         "Vax": {
                 waneShort: 0,
-                waneLong: 0,
+                wane: 0,
                 boostShort: 4,
-                boostLong: 14
+                boost: 14
         },
         "Delta": {
                 waneShort: 0,
-                waneLong: 0,
+                wane: 0,
                 boostShort: 4,
-                boostLong: 14
+                boost: 14
         }
     },
     observationalModel: {

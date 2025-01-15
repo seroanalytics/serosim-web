@@ -18,9 +18,9 @@ export function mockObsModel(model: Partial<ObservationalModel> = {}): Observati
 export function mockKineticsModel(model: Partial<KineticsModel> = {}): KineticsModel {
     return {
         waneShort: 0,
-        waneLong: 0,
+        wane: 0,
         boostShort: 0,
-        boostLong: 0,
+        boost: 0,
         ...model
     }
 }

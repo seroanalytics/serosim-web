@@ -99,10 +99,10 @@ function addExposureType(state: AppState, payload: ExposureType) {
     const newState = {...state, result: null}
     if (!newState.kinetics[payload.exposureType]) {
         newState.kinetics[payload.exposureType] = {
-                boostLong: 0,
+                boost: 0,
                 boostShort: 0,
                 waneShort: 0,
-                waneLong: 0
+                wane: 0
         }
     }
     newState.exposureTypes = [...state.exposureTypes, payload]

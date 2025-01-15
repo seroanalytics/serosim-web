@@ -303,32 +303,36 @@ export class WebRService implements RService {
         }));
     }
 
-    private getKineticsModelPars(kineticFunctions: "monophasic" | "biphasic",
+    private getKineticsModelPars(kineticsFunction: "monophasic" | "biphasic",
                                  exposureTypes: ExposureType[],
                                  kinetics: Dict<KineticsModel>): any[] {
-        return exposureTypes.flatMap((e: ExposureType, index: number) => {
-            const model = kinetics[e.exposureType];
-            return kineticFunctions === "monophasic" ? [{
-                exposure_id: index + 1,
-                biomarker_id: 1,
-                name: "boost",
-                mean: model.boostLong,
-                sd: null,
-                distribution: null
-            },
+
+        if (kineticsFunction === "monophasic") {
+            return exposureTypes.flatMap((e: ExposureType, index: number) => [
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "boost",
+                    mean: kinetics[e.exposureType].boost,
+                    sd: null,
+                    distribution: null
+                },
                 {
                     exposure_id: index + 1,
                     biomarker_id: 1,
                     name: "wane",
-                    mean: model.waneLong,
+                    mean: kinetics[e.exposureType].wane,
                     sd: null,
                     distribution: null
-                }] : [
+                }
+            ])
+        } else {
+            return exposureTypes.flatMap((e: ExposureType, index: number) => [
                 {
                     exposure_id: index + 1,
                     biomarker_id: 1,
                     name: "boost_long",
-                    mean: model.boostLong,
+                    mean: kinetics[e.exposureType].boost,
                     sd: null,
                     distribution: null
                 },
@@ -336,7 +340,7 @@ export class WebRService implements RService {
                     exposure_id: index + 1,
                     biomarker_id: 1,
                     name: "boost_short",
-                    mean: model.boostShort,
+                    mean: kinetics[e.exposureType].boostShort,
                     sd: null,
                     distribution: null
                 },
@@ -344,7 +348,7 @@ export class WebRService implements RService {
                     exposure_id: index + 1,
                     biomarker_id: 1,
                     name: "wane_long",
-                    mean: model.waneLong,
+                    mean: kinetics[e.exposureType].wane,
                     sd: null,
                     distribution: null
                 },
@@ -352,11 +356,11 @@ export class WebRService implements RService {
                     exposure_id: index + 1,
                     biomarker_id: 1,
                     name: "wane_short",
-                    mean: model.waneShort,
+                    mean: kinetics[e.exposureType].waneShort,
                     sd: null,
                     distribution: null
-                }]
-        })
+                }])
+        }
     }
 
     private getImmunityModelPars(exposureTypes: ExposureType[], immunityModel: ImmunityModel) {

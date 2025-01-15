@@ -17,10 +17,10 @@ export interface ExposureType {
 }
 
 export interface KineticsModel {
-    boostLong: number
+    boost: number
+    wane: number
     boostShort: number
     waneShort: number
-    waneLong: number
 }
 
 export interface ObservationalModel {

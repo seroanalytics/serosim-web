@@ -5,7 +5,7 @@ import {AppContext} from "../../src/services/AppContextProvider";
 import {MockRService} from "../mockRService";
 import React from "react";
 import {userEvent} from "@testing-library/user-event";
-import {ActionType, AppState} from "../../src/types";
+import {AppState} from "../../src/types";
 import {rootReducer} from "../../src/rootReducer";
 
 describe("<KineticsModelOptions>", () => {
@@ -35,10 +35,10 @@ describe("<KineticsModelOptions>", () => {
         expect(screen.getByLabelText("Boost long")).toBeInTheDocument();
         expect(screen.getByLabelText("Boost short")).toBeInTheDocument();
 
-        await assertParameterUpdated(state, dispatch, 0, "waneShort", "Wane short");
-        await assertParameterUpdated(state, dispatch, 1, "waneLong", "Wane long");
-        await assertParameterUpdated(state, dispatch, 2, "boostLong", "Boost long");
-        await assertParameterUpdated(state, dispatch, 3, "boostShort", "Boost short");
+        await assertParameterUpdated(state, dispatch, 0, "boost", "Boost long");
+        await assertParameterUpdated(state, dispatch, 1, "wane", "Wane long");
+        await assertParameterUpdated(state, dispatch, 2, "boostShort", "Boost short");
+        await assertParameterUpdated(state, dispatch, 3, "waneShort", "Wane short");
     });
 
     it("renders monophasic function parameters", async () => {
@@ -64,8 +64,8 @@ describe("<KineticsModelOptions>", () => {
         expect(screen.getByLabelText("Wane")).toBeInTheDocument();
         expect(screen.getByLabelText("Boost")).toBeInTheDocument();
 
-        await assertParameterUpdated(state, dispatch, 0, "boostLong", "Boost");
-        await assertParameterUpdated(state, dispatch, 1, "waneLong", "Wane");
+        await assertParameterUpdated(state, dispatch, 0, "boost", "Boost");
+        await assertParameterUpdated(state, dispatch, 1, "wane", "Wane");
     });
 })
 

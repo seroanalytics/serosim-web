@@ -19,7 +19,7 @@ describe("rootReducer", () => {
             type: ActionType.SET_KINETICS,
             payload: {
                 exposureType: "vax",
-                model: {"boostLong": 2}
+                model: {"boost": 2}
             }
         }
         const state = mockAppState({
@@ -29,9 +29,9 @@ describe("rootReducer", () => {
         });
         const result = rootReducer(state, action);
         expect(result.kinetics["vax"]).toEqual({
-            boostLong: 2,
+            boost: 2,
+            wane: 0,
             boostShort: 0,
-            waneLong: 0,
             waneShort: 0
         })
     });
