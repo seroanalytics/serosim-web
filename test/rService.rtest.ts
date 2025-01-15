@@ -50,7 +50,7 @@ describe("WebRService", () => {
 
     it("can generate kinetics plot with monophasic antibody model", async () => {
         const spy = jest.spyOn(rService, "_generatePlot" as any);
-        const result = await rService.getKineticsPlot("biphasic", [{exposureType: "vax"}] as any, {"vax": mockKineticsModel()}, 2, 5);
+        const result = await rService.getKineticsPlot("monophasic", [{exposureType: "vax"}] as any, {"vax": mockKineticsModel()}, 2, 5);
         expect(result.data.length).toBe(2);
         expect(result.layout.xaxis).not.toBeNull();
         expect(spy.mock.calls[0][0]).toMatch("serosim::plot_antibody_model(serosim::antibody_model_monophasic, N=2,times=seq(1,5,by=1)");
