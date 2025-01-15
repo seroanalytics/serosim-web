@@ -11,6 +11,7 @@ describe("<AntibodyKinetics>", () => {
 
     it("can update kinetics function", async () => {
         const state = mockAppState({
+            rReady: true,
             exposureTypes: [{
                 exposureType: "vax",
                 isVax: true,

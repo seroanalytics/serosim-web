@@ -1,5 +1,5 @@
 import React, {Dispatch} from "react";
-import {Col, Row} from "react-bootstrap";
+import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import {Action, ActionType, KineticsModel} from "../types";
 import {useAppContext} from "../services/AppContextProvider";
@@ -15,7 +15,10 @@ export default function KineticsModelOptions({exposureType}: {
     const setWaneLong = setParameter(dispatch, exposureType, "waneLong");
     const setWaneShort = setParameter(dispatch, exposureType, "waneShort");
 
-    return <Row>
+    return <Form className={"pt-3 mt-2 border px-2"}>
+        <h5 className={"pb-2"}>
+            {exposureType}
+        </h5><Row>
         <Col>
             <InlineFormControl value={model.boostLong}
                                handleChange={setBoostLong}
@@ -36,7 +39,7 @@ export default function KineticsModelOptions({exposureType}: {
                                    label={"Wane short"}/>}
         </Col>
     </Row>
-
+    </Form>
 }
 
 function setParameter(dispatch: Dispatch<Action>, exposureType: string, paramName: "boostLong" | "boostShort" | "waneLong" | "waneShort") {

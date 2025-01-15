@@ -209,7 +209,7 @@ export class WebRService implements RService {
             biomarker_id: 1,
             name: "obs_sd",
             mean: null,
-            sd: 1,
+            sd: state.observationalModel.error,
             distribution: "normal"
         }]
         const bounds = this.getObservationalBounds(state.observationalModel);
@@ -262,7 +262,7 @@ export class WebRService implements RService {
                 model_pars = model_pars,
                 exposure_model = serosim::exposure_model_simple_FOE,
                 immunity_model = serosim::immunity_model_vacc_ifxn_biomarker_prot,
-                antibody_model = serosim::antibody_model_biphasic,
+                antibody_model = serosim::antibody_model_${state.kineticsFunction},
                 observation_model = obs_model,
                 draw_parameters = serosim::draw_parameters_random_fx,
             
