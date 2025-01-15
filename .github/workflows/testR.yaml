@@ -1,4 +1,4 @@
-name: 🔎 Test
+name: 🔎 TestR
 
 on:
   push:
@@ -15,11 +15,13 @@ concurrency:
 
 jobs:
   lint:
-    name: 🔎 Test
+    name: 🔎 TestR
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
@@ -27,12 +29,11 @@ jobs:
       - name: 📥 Install deps
         run: npm install --frozen-lockfile
 
-      - name: 🔎 Test
-        run: npm run test
+      - name: 📥 Install httpuv
+        run: R -e 'install.packages("httpuv")'
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          fail_ci_if_error: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: ⎔ Run dependencies
+        run: ./scripts/run-dev-dependencies.R &
+
+      - name: 🔎 Test WebR
+        run: npm run rtest
