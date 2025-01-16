@@ -1,7 +1,7 @@
 import {Col, Row} from "react-bootstrap";
-import React, {useState} from "react";
+import React from "react";
 import {PlotlyPlot} from "./PlotlyPlot";
-import {ActionType, PlotlyProps} from "../types";
+import {ActionType} from "../types";
 import SectionError from "./SectionError";
 import {useAppContext} from "../services/AppContextProvider";
 import KineticsModelOptions from "./KineticsModelOptions";
@@ -10,13 +10,12 @@ import {usePlot} from "../hooks/usePlot";
 
 export function AntibodyKinetics() {
     const {state, rService, dispatch} = useAppContext();
-    const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
-    const plotError = usePlot("getKineticsPlot",
+    const [plot, plotError] = usePlot("getKineticsPlot",
         () => state.demography.numIndividuals > 0 && state.demography.tmax > 0 && state.exposureTypes.length > 0,
         async () => {
             return await rService.getKineticsPlot(state.kineticsFunction, state.exposureTypes, state.kinetics, state.demography.numIndividuals, state.demography.tmax);
-        }, setPlot,
+        },
         [rService, state.exposureTypes, state.kinetics, state.demography.numIndividuals, state.demography.tmax, state.kineticsFunction],
         750
     );

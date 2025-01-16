@@ -1,59 +1,55 @@
-import React, {useState} from "react";
+import React from "react";
 import {ActionType} from "../types";
 import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import SectionError from "./SectionError";
-import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {useAppContext} from "../services/AppContextProvider";
+import {usePlot} from "../hooks/usePlot";
 
 export function Demography() {
-
-    const [plot, setPlot] = useState<any>(null);
 
     const {state, dispatch, rService} = useAppContext();
     const demography = state.demography
 
-    const demoError = useAsyncEffectSafely(async () => {
-        if (demography.numIndividuals > 0 && demography.tmax > 0) {
-            setPlot(null);
+    const [plot, plotError] = usePlot(
+        "demography", () => demography.numIndividuals > 0 && demography.tmax > 0,
+        async () => {
+
             const demographyObj = await rService.getDemography(
                 demography.numIndividuals,
                 demography.tmax,
                 demography.pRemoval);
             dispatch({
-                type: ActionType.ADD_DEMOGRAPHY,
+                type: ActionType.SET_DEMOGRAPHY,
                 payload: {
                     rObj: demographyObj
                 }
             })
-            const result = await rService.getDemographyPlot(demographyObj);
-            setPlot(result);
-        }
-
-    }, [dispatch, rService,
-        demography.numIndividuals,
-        demography.tmax,
-        demography.pRemoval,
-        demography.requireRecalculation])
+            return await rService.getDemographyPlot(demographyObj);
+        }, [dispatch, rService,
+            demography.numIndividuals,
+            demography.tmax,
+            demography.pRemoval,
+            demography.requireRecalculation], 500)
 
     const setMaxTime = (tmax: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {tmax}
         })
     }
 
     const setN = (n: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {numIndividuals: n}
         })
     }
 
     const setP = (p: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {pRemoval: p}
         })
     }
@@ -61,7 +57,7 @@ export function Demography() {
     return <Row>
         <Col className={"pt-5"}>
             <h4>1. Define demography</h4>
-            <SectionError error={demoError}/>
+            <SectionError error={plotError}/>
             <Row className={"mt-3"}>
                 <Col>
                     <Form className={"pt-4 border px-2"}>
@@ -79,8 +75,9 @@ export function Demography() {
                     </Form>
                 </Col>
                 <Col>
-                    {(demography.numIndividuals > 0 && demography.tmax > 0) && <PlotlyPlot plot={plot}
-                                error={demoError}/>}
+                    {(demography.numIndividuals > 0 && demography.tmax > 0) &&
+                        <PlotlyPlot plot={plot}
+                                    error={plotError}/>}
                     {(!demography.numIndividuals || demography.numIndividuals < 1 || !demography.tmax || demography.tmax < 1) &&
                         <div className={"py-5 text-center"}>Choose a number of
                             individuals and max time greater than 0</div>}

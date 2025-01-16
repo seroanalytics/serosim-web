@@ -48,7 +48,7 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
             return setKinetics(state, action.payload)
         case ActionType.SET_BIOMARKER:
             return setBiomarker(state, action.payload)
-        case ActionType.ADD_DEMOGRAPHY:
+        case ActionType.SET_DEMOGRAPHY:
             return {
                 ...state,
                 result: null,

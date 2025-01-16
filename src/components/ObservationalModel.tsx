@@ -1,17 +1,16 @@
-import React, {useState} from "react";
+import React from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {PlotlyProps, ActionType} from "../types";
+import {ActionType} from "../types";
 import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
-import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import InlineFormSelect from "./InlineFormSelect";
 import {useAppContext} from "../services/AppContextProvider";
+import {usePlot} from "../hooks/usePlot";
 
 export default function ObservationalModel() {
     const {state, dispatch, rService} = useAppContext();
     const obsModel = state.observationalModel;
-    const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     const setModelError = (newValue: number) => {
         dispatch({
@@ -54,13 +53,11 @@ export default function ObservationalModel() {
         })
     }
 
-    const plotError = useAsyncEffectSafely(async () => {
-        if (obsModel.numBleeds >= 1) {
-            setPlot(null)
-            const plot = await rService.getObservationTimesPlot(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax);
-            setPlot(plot)
-        }
-    }, [obsModel, state.demography.tmax, state.demography.numIndividuals, obsModel.numBleeds])
+    const [plot, plotError] = usePlot("obs_model",
+        () => obsModel.numBleeds > 0,
+        async () => await rService.getObservationTimesPlot(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax),
+        [state.demography.tmax, state.demography.numIndividuals, obsModel.numBleeds],
+        500)
 
     return <Row>
         <Col className={"pt-5"}>

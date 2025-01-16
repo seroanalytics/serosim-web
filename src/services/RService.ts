@@ -51,8 +51,8 @@ export class WebRService implements RService {
         return JSON.parse(plotlyData)
     }
 
-    constructor() {
-        this._webR = new WebR();
+    constructor(webR: WebR = new WebR()) {
+        this._webR = webR
         console.log("New R worker")
     }
 
@@ -178,7 +178,10 @@ export class WebRService implements RService {
     async getExposuresOutput(result: WebRDataJs, exposures: ExposureType[]): Promise<string> {
         await this.waitForReady();
         const exposureNames = exposures.map(e => e.exposureType)
-        const env = await new this._webR.REnvironment({result, exposure_names: exposureNames});
+        const env = await new this._webR.REnvironment({
+            result,
+            exposure_names: exposureNames
+        });
         return await this._webR.evalRString(`
             tc <- textConnection("csv", "w") 
             exp <- as.data.frame(result$immune_histories_long)
@@ -223,16 +226,7 @@ export class WebRService implements RService {
     async runSerosim(state: AppState): Promise<WebRDataJs> {
         await this.waitForReady();
 
-        const modelParsKinetics = this.getKineticsModelPars(state.kineticsFunction, state.exposureTypes, state.kinetics);
-        const modelParsImmunity = this.getImmunityModelPars(state.exposureTypes, state.immunityModel);
-        const modelPars = [...modelParsKinetics, ...modelParsImmunity, {
-            exposure_id: null,
-            biomarker_id: 1,
-            name: "obs_sd",
-            mean: null,
-            sd: state.observationalModel.error,
-            distribution: "normal"
-        }]
+        const modelPars = this.getModelPars(state)
         const bounds = this.getObservationalBounds(state.observationalModel);
 
         const foe = state.exposureTypes.map(p => p.FOE);
@@ -317,6 +311,19 @@ export class WebRService implements RService {
         })
     }
 
+    getModelPars(state: AppState) {
+        const modelParsKinetics = this.getKineticsModelPars(state.kineticsFunction, state.exposureTypes, state.kinetics);
+        const modelParsImmunity = this.getImmunityModelPars(state.exposureTypes, state.immunityModel);
+        return [...modelParsKinetics, ...modelParsImmunity, {
+            exposure_id: null,
+            biomarker_id: 1,
+            name: "obs_sd",
+            mean: null,
+            sd: state.observationalModel.error,
+            distribution: "normal"
+        }]
+    }
+
     private getBiomarkerMap(exposureTypes: ExposureType[]) {
         return exposureTypes.map((e, index) => ({
             exposure_id: index + 1,
@@ -385,19 +392,20 @@ export class WebRService implements RService {
     }
 
     private getImmunityModelPars(exposureTypes: ExposureType[], immunityModel: ImmunityModel) {
-        return exposureTypes.flatMap((e, index) => [{
-            exposure_id: index + 1,
-            biomarker_id: 1,
-            name: "biomarker_prot_midpoint",
-            mean: immunityModel?.midpoint,
-            sd: null,
-            distribution: null
-        },
+        return exposureTypes.flatMap((e, index) => [
+            {
+                exposure_id: index + 1,
+                biomarker_id: 1,
+                name: "biomarker_prot_midpoint",
+                mean: immunityModel?.midpoint,
+                sd: null,
+                distribution: null
+            },
             {
                 exposure_id: index + 1,
                 biomarker_id: 1,
                 name: "biomarker_prot_width",
-                mean: immunityModel?.midpoint,
+                mean: immunityModel?.variance,
                 sd: null,
                 distribution: null
             }])

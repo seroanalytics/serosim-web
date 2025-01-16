@@ -1,5 +1,5 @@
 import {
-    AppState, KineticsModel, ObservationalModel
+    AppState, ExposureType, ImmunityModel, KineticsModel, ObservationalModel
 } from "../src/types";
 import {empty} from "../src/scenarios";
 
@@ -12,6 +12,25 @@ export function mockObsModel(model: Partial<ObservationalModel> = {}): Observati
         upperBound: 0,
         numBleeds: 0,
         ...model
+    }
+}
+
+export function mockImmunityModel(model: Partial<ImmunityModel> = {}): ImmunityModel {
+    return {
+        max: 14,
+        midpoint: 7,
+        variance: 0.1,
+        ...model
+    }
+}
+
+export function mockExposureType(exposure: Partial<ExposureType> = {}): ExposureType {
+    return {
+        isVax: true,
+        age: 0,
+        exposureType: "Vax",
+        FOE: 0.1,
+        ...exposure
     }
 }
 

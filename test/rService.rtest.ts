@@ -1,8 +1,13 @@
 import {WebRService} from "../src/services/RService";
 import {WebRDataJsNode} from "webr/dist/webR/robj";
-import {mockKineticsModel} from "./mocks";
+import {
+    mockAppState,
+    mockExposureType, mockImmunityModel,
+    mockKineticsModel,
+    mockObsModel
+} from "./mocks";
 
-describe("WebRService", () => {
+describe("WebRService integration", () => {
 
     const rService = new WebRService();
     beforeAll(async () => {
@@ -36,6 +41,12 @@ describe("WebRService", () => {
             ]
         }
         const result = await rService.getDemographyPlot(demography as WebRDataJsNode);
+        expect(result.data.length).toBe(1);
+        expect(result.layout.xaxis).not.toBeNull();
+    });
+
+    it("can generate observation plot", async () => {
+        const result = await rService.getObservationTimesPlot(1, 10, 10);
         expect(result.data.length).toBe(1);
         expect(result.layout.xaxis).not.toBeNull();
     });
@@ -124,7 +135,7 @@ describe("WebRService", () => {
         expect(lines[0]).toBe("\"id\",\"day\",\"exposure\",\"value\"");
         expect(lines[1]).toBe("1,1,\"vax\",0");
         expect(lines[2]).toBe("1,2,\"delta\",1");
-    })
+    });
 
     afterAll(() => {
         rService.close()

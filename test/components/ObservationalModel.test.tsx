@@ -160,5 +160,5 @@ describe("<ObservationalModel/>", () => {
         await waitFor(() =>
             rService.getObservationTimesPlot.mock.calls.length === 1
         )
-    })
+    });
 })

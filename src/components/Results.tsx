@@ -1,48 +1,28 @@
 import {Button, Col, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import {PlotlyPlot} from "./PlotlyPlot";
-import {PlotlyProps} from "../types";
 import SectionError from "./SectionError";
 import RunSerosim from "./RunSerosim";
 import {DownloadCloudIcon} from "lucide-react";
-import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {ScaleLoader} from "react-spinners";
 import {useAppContext} from "../services/AppContextProvider";
+import {usePlot} from "../hooks/usePlot";
 
 export default function Results() {
     const {state, rService} = useAppContext();
-
-    const [kinetics, setKinetics] = useState<PlotlyProps | null>(null)
-    const [quantity, setQuantity] = useState<PlotlyProps | null>(null)
     const [downloading, setDownloading] = useState<boolean>(false);
 
-    const kineticsError = useAsyncEffectSafely(async () => {
+    const [kinetics, kineticsError] = usePlot("getIndividualKinetics",
+        () => !!state.result,
+        async () => {
+            return await rService.getIndividualKinetics(state.demography.rObj!!, state.result);
+        },
+        [rService, state.demography, state.result], 0);
 
-        const getPlot = async () => {
-            setKinetics(null)
-            const kinetics = await rService.getIndividualKinetics(state.demography.rObj!!, state.result);
-            setKinetics(kinetics)
-        }
-
-        if (state.result) {
-            await getPlot()
-        }
-
-    }, [rService, state.demography, state.result]);
-
-    const quantityError = useAsyncEffectSafely(async () => {
-
-        const getPlot = async () => {
-            setQuantity(null)
-            const quantity = await rService.getBiomarkerQuantity(state.result);
-            setQuantity(quantity)
-        }
-
-        if (state.result) {
-            await getPlot()
-        }
-
-    }, [rService, state.demography, state.result]);
+    const [quantity, quantityError] = usePlot("getBiomarkerQuantity",
+        () => !!state.result,
+        async () => await rService.getBiomarkerQuantity(state.result),
+        [rService, state.demography, state.result], 0);
 
     const downloadResults = async () => {
         setDownloading(true);

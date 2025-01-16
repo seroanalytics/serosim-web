@@ -29,15 +29,13 @@ const runningOperationCounter = new RunningOperationCounter()
 // set once the last requested calculation has resolved. This avoids the plot being
 // set to an output that doesn't match the inputs while a recalculation is still running.
 
-// It returns a string that is empty/falsy if successful, and an error message if unsuccessful.
-
 export const usePlot = (name: string,
                         condition: () => boolean,
                         createPlot: () => Promise<PlotlyProps>,
-                        setPlot: (plot: PlotlyProps | null) => void,
                         deps: any[],
-                        delay: number) => {
+                        delay: number):  [PlotlyProps | null, string] => {
     const [error, setError] = useState<string>("");
+    const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     useEffect(() => {
         if (condition()) {
@@ -66,5 +64,5 @@ export const usePlot = (name: string,
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, deps);
-    return error
+    return [plot, error]
 }

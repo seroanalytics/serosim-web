@@ -1,18 +1,16 @@
-import React, {useState} from "react";
+import React from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import {PlotlyPlot} from "./PlotlyPlot";
-import {PlotlyProps, ActionType} from "../types";
+import {ActionType} from "../types";
 import SectionError from "./SectionError";
-import {useAsyncEffectSafely} from "../hooks/useAsyncEffectSafely";
 import {useAppContext} from "../services/AppContextProvider";
+import {usePlot} from "../hooks/usePlot";
 
 export default function ImmunityModel() {
 
     const {state, dispatch, rService} = useAppContext();
-
     const immunityModel = state.immunityModel;
-    const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     const setMax = (newValue: number) => {
         dispatch({
@@ -48,11 +46,10 @@ export default function ImmunityModel() {
         })
     }
 
-    const plotError = useAsyncEffectSafely(async () => {
-        setPlot(null)
-        const plot = await rService.getImmunityPlot(immunityModel.max, immunityModel.midpoint, immunityModel.variance);
-        setPlot(plot)
-    }, [rService, immunityModel.max, immunityModel.variance, immunityModel.midpoint])
+    const [plot, plotError] = usePlot("immunity",
+        () => immunityModel.max > 0 && immunityModel.midpoint > 0,
+        async () => await rService.getImmunityPlot(immunityModel.max, immunityModel.midpoint, immunityModel.variance),
+        [rService, immunityModel.max, immunityModel.variance, immunityModel.midpoint], 500)
 
 
     return <Row className={"mb-2"}>
@@ -86,7 +83,8 @@ export default function ImmunityModel() {
                     {(immunityModel.max > 0 && immunityModel.midpoint > 0) &&
                         <PlotlyPlot plot={plot} error={plotError}/>}
                     {(immunityModel.max < 1 || immunityModel.midpoint < 1) &&
-                        <div className={"py-5 text-center"}>Choose a valid max and midpoint</div>}
+                        <div className={"py-5 text-center"}>Choose a valid max
+                            and midpoint</div>}
                 </Col>
             </Row>
         </Col>
