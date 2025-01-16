@@ -24,7 +24,6 @@ export default function RunSerosim() {
                 type: ActionType.SET_RESULTS,
                 payload: result
             });
-            console.log(result)
         } catch (error) {
             setError(`${error}`);
         }
