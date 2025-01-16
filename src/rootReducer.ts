@@ -1,12 +1,10 @@
 import {
     AppState,
     ExposureType,
-    BiphasicDecay,
     ImmunityModel,
-    ObservationalModel, Action, ActionType
+    ObservationalModel, Action, ActionType, KineticsModel
 } from "./types";
 import {scenarios} from "./scenarios";
-
 
 export const rootReducer = (state: AppState, action: Action): AppState => {
     console.log(action.type);
@@ -44,6 +42,8 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
             return setImmunityModel(state, action.payload)
         case ActionType.SET_OBSERVATION_MODEL:
             return setObservationalModel(state, action.payload)
+        case ActionType.SET_KINETICS_FUNCTION:
+            return {...state, kineticsFunction: action.payload}
         case ActionType.SET_KINETICS:
             return setKinetics(state, action.payload)
         case ActionType.SET_BIOMARKER:
@@ -99,10 +99,10 @@ function addExposureType(state: AppState, payload: ExposureType) {
     const newState = {...state, result: null}
     if (!newState.kinetics[payload.exposureType]) {
         newState.kinetics[payload.exposureType] = {
-            boostLong: 0,
-            boostShort: 0,
-            waneShort: 0,
-            waneLong: 0
+                boost: 0,
+                boostShort: 0,
+                waneShort: 0,
+                wane: 0
         }
     }
     newState.exposureTypes = [...state.exposureTypes, payload]
@@ -122,11 +122,11 @@ function setObservationalModel(state: AppState, payload: ObservationalModel) {
 }
 
 function setKinetics(state: AppState, payload: {
-    exposure: ExposureType,
-    model: BiphasicDecay
+    exposureType: string,
+    model: KineticsModel
 }) {
     const newState = {...state, result: null}
     newState.kinetics = {...state.kinetics}
-    newState.kinetics[payload.exposure.exposureType] = {...state.kinetics[payload.exposure.exposureType], ...payload.model}
+    newState.kinetics[payload.exposureType] = {...state.kinetics[payload.exposureType], ...payload.model}
     return newState
 }

@@ -41,6 +41,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "jest",
+    "rtest": "jest --config=jest.rtests.config.ts",
     "lint": "npx eslint ./src ",
     "eject": "react-scripts eject"
   },

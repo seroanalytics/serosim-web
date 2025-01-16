@@ -1,0 +1,39 @@
+name: 🔎 TestR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: 🔎 TestR
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+
+      - name: 📥 Install deps
+        run: npm install --frozen-lockfile
+
+      - name: 📥 Install httpuv
+        run: R -e 'install.packages("httpuv")'
+
+      - name: ⎔ Run dependencies
+        run: ./scripts/run-dev-dependencies.R &
+
+      - name: 🔎 Test WebR
+        run: npm run rtest

@@ -1,7 +1,7 @@
 import {REnvironment, WebR} from "webr";
 import {
     AppState,
-    BiphasicDecay,
+    KineticsModel,
     Dict,
     ExposureType,
     ImmunityModel, ObservationalModel,
@@ -11,14 +11,22 @@ import {WebRDataJs} from "webr/dist/webR/robj";
 
 export interface RService {
 
-    getKineticsPlot(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+    getKineticsPlot(kineticsFunction: "monophasic" | "biphasic", exposureTypes: ExposureType[], kinetics: Dict<KineticsModel>, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+
     getDemography(numIndividuals: number, tmax: number, pRemoval: number): Promise<WebRDataJs>;
+
     getDemographyPlot(demographyObj: WebRDataJs): Promise<PlotlyProps>;
+
     getImmunityPlot(max: number, midpoint: number, variance: number): Promise<PlotlyProps>;
+
     getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+
     getBiomarkerQuantity(result: WebRDataJs): Promise<PlotlyProps>;
+
     getIndividualKinetics(demography: WebRDataJs, result: WebRDataJs): Promise<PlotlyProps>;
+
     getResultsJson(result: WebRDataJs): Promise<string>;
+
     runSerosim(state: AppState): Promise<WebRDataJs>;
 }
 
@@ -50,7 +58,7 @@ export class WebRService implements RService {
     }
 
     private getRepoUrl = () => {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
             return "http://localhost:9090";
         }
         return `https://${window.location.host}/repo`;
@@ -168,9 +176,9 @@ export class WebRService implements RService {
         return await this._webR.evalRString("jsonlite::toJSON(result)", {env})
     }
 
-    async getKineticsPlot(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>, numIndividuals: number, tmax: number) {
+    async getKineticsPlot(kineticsFunction: "monophasic" | "biphasic", exposureTypes: ExposureType[], kinetics: Dict<KineticsModel>, numIndividuals: number, tmax: number) {
         await this.waitForReady();
-        const modelParsKinetics = await new this._webR.RObject(this.getKineticsModelPars(exposureTypes, kinetics));
+        const modelParsKinetics = await new this._webR.RObject(this.getKineticsModelPars(kineticsFunction, exposureTypes, kinetics));
         const biomarkerMap = await new this._webR.RObject(this.getBiomarkerMap(exposureTypes));
         const facetLabeller = await this.getFacetLabeler(exposureTypes);
         try {
@@ -180,7 +188,7 @@ export class WebRService implements RService {
                 facet_labeller: facetLabeller
             });
             return await this._generatePlot(
-                `serosim::plot_antibody_model(serosim::antibody_model_biphasic, N=${numIndividuals},times =seq(1,${tmax},by=1),
+                `serosim::plot_antibody_model(serosim::antibody_model_${kineticsFunction}, N=${numIndividuals},times=seq(1,${tmax},by=1),
              model_pars=model_pars, draw_parameters_fn = serosim::draw_parameters_random_fx, biomarker_map=as.data.frame(biomarker_map)) +
              ggplot2::guides(color = "none") + ggplot2::facet_wrap(~exposure_id,scales="free_y", labeller = ggplot2::as_labeller(facet_labeller), ncol =1)
             `, env);
@@ -194,14 +202,14 @@ export class WebRService implements RService {
     async runSerosim(state: AppState): Promise<WebRDataJs> {
         await this.waitForReady();
 
-        const modelParsKinetics = this.getKineticsModelPars(state.exposureTypes, state.kinetics);
+        const modelParsKinetics = this.getKineticsModelPars(state.kineticsFunction, state.exposureTypes, state.kinetics);
         const modelParsImmunity = this.getImmunityModelPars(state.exposureTypes, state.immunityModel);
         const modelPars = [...modelParsKinetics, ...modelParsImmunity, {
             exposure_id: null,
             biomarker_id: 1,
             name: "obs_sd",
             mean: null,
-            sd: 1,
+            sd: state.observationalModel.error,
             distribution: "normal"
         }]
         const bounds = this.getObservationalBounds(state.observationalModel);
@@ -254,7 +262,7 @@ export class WebRService implements RService {
                 model_pars = model_pars,
                 exposure_model = serosim::exposure_model_simple_FOE,
                 immunity_model = serosim::immunity_model_vacc_ifxn_biomarker_prot,
-                antibody_model = serosim::antibody_model_biphasic,
+                antibody_model = serosim::antibody_model_${state.kineticsFunction},
                 observation_model = obs_model,
                 draw_parameters = serosim::draw_parameters_random_fx,
             
@@ -295,40 +303,64 @@ export class WebRService implements RService {
         }));
     }
 
-    private getKineticsModelPars(exposureTypes: ExposureType[], kinetics: Dict<BiphasicDecay>) {
-        return exposureTypes.flatMap((e, index) => [
-            {
-                exposure_id: index + 1,
-                biomarker_id: 1,
-                name: "boost_long",
-                mean: kinetics[e.exposureType].boostLong,
-                sd: null,
-                distribution: null
-            },
-            {
-                exposure_id: index + 1,
-                biomarker_id: 1,
-                name: "boost_short",
-                mean: kinetics[e.exposureType].boostShort,
-                sd: null,
-                distribution: null
-            },
-            {
-                exposure_id: index + 1,
-                biomarker_id: 1,
-                name: "wane_long",
-                mean: kinetics[e.exposureType].waneLong,
-                sd: null,
-                distribution: null
-            },
-            {
-                exposure_id: index + 1,
-                biomarker_id: 1,
-                name: "wane_short",
-                mean: kinetics[e.exposureType].waneShort,
-                sd: null,
-                distribution: null
-            }])
+    private getKineticsModelPars(kineticsFunction: "monophasic" | "biphasic",
+                                 exposureTypes: ExposureType[],
+                                 kinetics: Dict<KineticsModel>): any[] {
+
+        if (kineticsFunction === "monophasic") {
+            return exposureTypes.flatMap((e: ExposureType, index: number) => [
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "boost",
+                    mean: kinetics[e.exposureType].boost,
+                    sd: null,
+                    distribution: null
+                },
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "wane",
+                    mean: kinetics[e.exposureType].wane,
+                    sd: null,
+                    distribution: null
+                }
+            ])
+        } else {
+            return exposureTypes.flatMap((e: ExposureType, index: number) => [
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "boost_long",
+                    mean: kinetics[e.exposureType].boost,
+                    sd: null,
+                    distribution: null
+                },
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "boost_short",
+                    mean: kinetics[e.exposureType].boostShort,
+                    sd: null,
+                    distribution: null
+                },
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "wane_long",
+                    mean: kinetics[e.exposureType].wane,
+                    sd: null,
+                    distribution: null
+                },
+                {
+                    exposure_id: index + 1,
+                    biomarker_id: 1,
+                    name: "wane_short",
+                    mean: kinetics[e.exposureType].waneShort,
+                    sd: null,
+                    distribution: null
+                }])
+        }
     }
 
     private getImmunityModelPars(exposureTypes: ExposureType[], immunityModel: ImmunityModel) {

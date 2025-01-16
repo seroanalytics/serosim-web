@@ -1,5 +1,5 @@
 import {
-    AppState, ObservationalModel
+    AppState, KineticsModel, ObservationalModel
 } from "../src/types";
 import {empty} from "../src/scenarios";
 
@@ -11,6 +11,16 @@ export function mockObsModel(model: Partial<ObservationalModel> = {}): Observati
         lowerBound: 0,
         upperBound: 0,
         numBleeds: 0,
+        ...model
+    }
+}
+
+export function mockKineticsModel(model: Partial<KineticsModel> = {}): KineticsModel {
+    return {
+        waneShort: 0,
+        wane: 0,
+        boostShort: 0,
+        boost: 0,
         ...model
     }
 }

@@ -4,37 +4,37 @@ const steps: Step[] = [
     {
         num: 1,
         name: "Define demography",
-        complete: (state: AppState) => state.demography.tmax > 0 && state.demography.numIndividuals > 0 && !!state.demography.rObj,
+        complete: (state: AppState) => state.rReady && state.demography.tmax > 0 && state.demography.numIndividuals > 0 && !!state.demography.rObj,
         ready: (state: AppState) => true
     },
     {
         num: 2,
         name: "Define observational model",
-        complete: (state: AppState) => !!state.observationalModel && state.observationalModel.numBleeds > 0,
+        complete: (state: AppState) => state.rReady && !!state.observationalModel && state.observationalModel.numBleeds > 0,
         ready: (state: AppState) => true
     },
     {
         num: 3,
         name: "Define immunity model",
-        complete: (state: AppState) => !!state.immunityModel && state.immunityModel.max > 0 && state.immunityModel.midpoint > 0 && state.immunityModel.variance > 0,
+        complete: (state: AppState) => state.rReady && !!state.immunityModel && state.immunityModel.max > 0 && state.immunityModel.midpoint > 0 && state.immunityModel.variance > 0,
         ready: (state: AppState) => true
     },
     {
         num: 4,
         name: "Define exposures",
-        complete: (state: AppState) => state.exposureTypes.length > 0,
+        complete: (state: AppState) => state.rReady && state.exposureTypes.length > 0,
         ready: (state: AppState) => true
     },
     {
         num: 5,
         name: "Define kinetics",
-        complete: (state: AppState) => state.exposureTypes.length > 0 && Object.values(state.kinetics).every(k => k.boostLong > 0 || k.boostShort > 0 || k.waneShort > 0 || k.waneLong > 0),
-        ready: (state: AppState) => state.exposureTypes.length > 0
+        complete: (state: AppState) => state.rReady && state.exposureTypes.length > 0, //&& Object.values(state.kinetics).every(k => k.boostLong > 0 || k.boostShort > 0 || k.waneShort > 0 || k.waneLong > 0),
+        ready: (state: AppState) => state.rReady && state.exposureTypes.length > 0
     },
     {
         num: 6,
         name: "Generate dataset",
-        complete: (state: AppState) => !!state.result,
+        complete: (state: AppState) => state.rReady && !!state.result,
         ready: (state: AppState) => state.steps.slice(0, 5).every(s => s.complete(state))
     }
 ]
@@ -71,18 +71,19 @@ const measles: AppState = {
         requireRecalculation: true
     },
     rReady: false,
+    kineticsFunction: "biphasic",
     kinetics: {
         "Vax": {
-            waneShort: 0,
-            waneLong: 0,
-            boostShort: 4,
-            boostLong: 14
+                waneShort: 0,
+                wane: 0,
+                boostShort: 4,
+                boost: 14
         },
         "Delta": {
-            waneShort: 0,
-            waneLong: 0,
-            boostShort: 4,
-            boostLong: 14
+                waneShort: 0,
+                wane: 0,
+                boostShort: 4,
+                boost: 14
         }
     },
     observationalModel: {
@@ -107,6 +108,7 @@ export const empty: AppState = {
     demography: initialDemography,
     rReady: false,
     kinetics: {},
+    kineticsFunction: "monophasic",
     observationalModel: {
         lowerBound: 0,
         upperBound: 0,

@@ -1,13 +1,13 @@
 import {render, screen, waitFor} from "@testing-library/react";
 import React from "react";
-import ObservationalModel from "../src/components/ObservationalModel";
-import {mockAppState, mockObsModel} from "./mocks";
+import ObservationalModel from "../../src/components/ObservationalModel";
+import {mockAppState, mockObsModel} from "../mocks";
 import {
     AppContext
-} from "../src/services/AppContextProvider";
+} from "../../src/services/AppContextProvider";
 import {userEvent} from "@testing-library/user-event";
-import {ActionType} from "../src/types";
-import {MockRService} from "./mockRService";
+import {ActionType} from "../../src/types";
+import {MockRService} from "../mockRService";
 
 describe("<ObservationalModel/>", () => {
 

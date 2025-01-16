@@ -27,6 +27,11 @@ You will also see any lint errors in the console.
 
 Runs tests using jest.
 
+### `npm run rtest`
+
+Runs tests of the WebRService (i.e. code that runs WebR) using jest. For these tests to run you must have the local R repo 
+available on port 9090.
+
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\

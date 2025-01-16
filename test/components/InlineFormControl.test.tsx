@@ -1,5 +1,5 @@
 import {render, screen} from "@testing-library/react";
-import InlineFormControl from "../src/components/InlineFormControl";
+import InlineFormControl from "../../src/components/InlineFormControl";
 import React from "react";
 import {userEvent} from "@testing-library/user-event";
 
