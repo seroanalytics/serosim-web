@@ -47,7 +47,7 @@ export default function ImmunityModel() {
     }
 
     const [plot, plotError] = usePlot("immunity",
-        () => true,
+        () => immunityModel.max > 0 && immunityModel.midpoint > 0,
         async () => await rService.getImmunityPlot(immunityModel.max, immunityModel.midpoint, immunityModel.variance),
         [rService, immunityModel.max, immunityModel.variance, immunityModel.midpoint], 500)
 

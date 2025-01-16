@@ -51,8 +51,8 @@ export class WebRService implements RService {
         return JSON.parse(plotlyData)
     }
 
-    constructor() {
-        this._webR = new WebR();
+    constructor(webR: WebR = new WebR()) {
+        this._webR = webR
         console.log("New R worker")
     }
 

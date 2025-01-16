@@ -21,7 +21,7 @@ export function Demography() {
                 demography.tmax,
                 demography.pRemoval);
             dispatch({
-                type: ActionType.ADD_DEMOGRAPHY,
+                type: ActionType.SET_DEMOGRAPHY,
                 payload: {
                     rObj: demographyObj
                 }
@@ -35,21 +35,21 @@ export function Demography() {
 
     const setMaxTime = (tmax: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {tmax}
         })
     }
 
     const setN = (n: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {numIndividuals: n}
         })
     }
 
     const setP = (p: number) => {
         dispatch({
-            type: ActionType.ADD_DEMOGRAPHY,
+            type: ActionType.SET_DEMOGRAPHY,
             payload: {pRemoval: p}
         })
     }
