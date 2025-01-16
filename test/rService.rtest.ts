@@ -56,6 +56,76 @@ describe("WebRService", () => {
         expect(spy.mock.calls[0][0]).toMatch("serosim::plot_antibody_model(serosim::antibody_model_monophasic, N=2,times=seq(1,5,by=1)");
     });
 
+    it("can generate sero output as csv", async () => {
+        const result = {
+            type: "list",
+            names: ["observed_biomarker_states"],
+            values: [
+                {
+                    type: "list",
+                    names: ["id", "t", "b", "i", "value", "observed"],
+                    values: [
+                        {
+                            type: "integer", names: null, values: [1, 1]
+                        },
+                        {
+                            type: "integer", names: null, values: [1, 2]
+                        },
+                        {
+                            type: "double", names: null, values: [1, 1]
+                        },
+                        {
+                            type: "integer", names: null, values: [1, 1]
+                        },
+                        {
+                            type: "double", names: null, values: [1.1, 1.2]
+                        },
+                        {
+                            type: "double", names: null, values: [1, 1]
+                        }
+                    ]
+                }
+            ]
+        }
+        const output = await rService.getSeroOutput(result as WebRDataJsNode);
+        const lines = output.split("\n")
+        expect(lines[0]).toBe("\"id\",\"day\",\"biomarker\",\"i\",\"value\",\"observed\"");
+        expect(lines[1]).toBe("1,1,1,1,1.1,1");
+        expect(lines[2]).toBe("1,2,1,1,1.2,1");
+    })
+
+    it("can generate exposure histories output as csv", async () => {
+        const result = {
+            type: "list",
+            names: ["immune_histories_long"],
+            values: [
+                {
+                    type: "list",
+                    names: ["i", "t", "x", "value"],
+                    values: [
+                        {
+                            type: "integer", names: null, values: [1, 1]
+                        },
+                        {
+                            type: "integer", names: null, values: [1, 2]
+                        },
+                        {
+                            type: "integer", names: null, values: [1, 2]
+                        },
+                        {
+                            type: "double", names: null, values: [0, 1]
+                        }
+                    ]
+                }
+            ]
+        }
+        const output = await rService.getExposuresOutput(result as WebRDataJsNode);
+        const lines = output.split("\n")
+        expect(lines[0]).toBe("\"id\",\"day\",\"exposure\",\"value\"");
+        expect(lines[1]).toBe("1,1,1,0");
+        expect(lines[2]).toBe("1,2,2,1");
+    })
+
     afterAll(() => {
         rService.close()
     })

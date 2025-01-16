@@ -158,16 +158,26 @@ export class WebRService implements RService {
             env);
     }
 
-    async getSeroDataJson(result: WebRDataJs): Promise<string> {
+    async getSeroOutput(result: WebRDataJs): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
-        return await this._webR.evalRString("jsonlite::toJSON(result$observed_biomarker_states)", {env})
+        return await this._webR.evalRString(`
+            tc <- textConnection("csv", "w") 
+            write.table(result$observed_biomarker_states, tc, row.names=F, col.names=c("id","day","biomarker","i","value","observed"), sep=",")
+            close(tc)
+            paste0(csv, collapse="\n")
+        `, {env})
     }
 
-    async getInfDataJson(result: WebRDataJs): Promise<string> {
+    async getExposuresOutput(result: WebRDataJs): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
-        return await this._webR.evalRString("jsonlite::toJSON(results$immune_histories_long)", {env})
+        return await this._webR.evalRString(`
+            tc <- textConnection("csv", "w") 
+            write.table(result$immune_histories_long, tc, row.names=F, col.names=c("id","day","exposure","value"), sep=",")
+            close(tc)
+            paste0(csv, collapse="\n")
+        `, {env})
     }
 
     async getResultsJson(result: WebRDataJs): Promise<string> {
