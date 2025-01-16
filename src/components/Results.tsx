@@ -55,6 +55,28 @@ export default function Results() {
         }
     }
 
+    const downloadSerology = async () => {
+        setDownloading(true);
+        try {
+            const result = await rService.getSeroOutput(state.result, state.biomarker);
+            let type = "text/csv", name = "sero.csv";
+            downloader(result, type, name)
+        } finally {
+            setDownloading(false)
+        }
+    }
+
+    const downloadExposures = async () => {
+        setDownloading(true);
+        try {
+            const result = await rService.getExposuresOutput(state.result, state.exposureTypes);
+            let type = "text/csv", name = "exposures.csv";
+            downloader(result, type, name)
+        } finally {
+            setDownloading(false)
+        }
+    }
+
     function downloadURI(uri: any, name: any) {
         let link = document.createElement("a");
         link.download = name;
@@ -79,10 +101,25 @@ export default function Results() {
             <RunSerosim/>
             {downloading && <ScaleLoader/>}
             {state.result && <Button size={"lg"}
+                                     className={"me-2"}
+                                     onClick={downloadSerology}
+                                     variant={"secondary"}
+                                     disabled={downloading}>
+                <DownloadCloudIcon/> Download serology
+            </Button>}
+            {state.result && <Button size={"lg"}
+                                     className={"me-2"}
+                                     onClick={downloadExposures}
+                                     variant={"secondary"}
+                                     disabled={downloading}>
+                <DownloadCloudIcon/> Download exposures
+            </Button>}
+            {state.result && <Button size={"lg"}
+                                     className={"me-2"}
                                      onClick={downloadResults}
                                      variant={"secondary"}
                                      disabled={downloading}>
-                <DownloadCloudIcon/> Download
+                <DownloadCloudIcon/> Download all
             </Button>}
             <Row className={"mt-3"}>
                 <Col>
