@@ -87,11 +87,11 @@ describe("WebRService", () => {
                 }
             ]
         }
-        const output = await rService.getSeroOutput(result as WebRDataJsNode);
+        const output = await rService.getSeroOutput(result as WebRDataJsNode, "IgG");
         const lines = output.split("\n")
         expect(lines[0]).toBe("\"id\",\"day\",\"biomarker\",\"value\"");
-        expect(lines[1]).toBe("1,1,1,19.5");
-        expect(lines[2]).toBe("1,2,1,21.2");
+        expect(lines[1]).toBe("1,1,\"IgG\",19.5");
+        expect(lines[2]).toBe("1,2,\"IgG\",21.2");
     })
 
     it("can generate exposure histories output as csv", async () => {
@@ -119,11 +119,11 @@ describe("WebRService", () => {
                 }
             ]
         }
-        const output = await rService.getExposuresOutput(result as WebRDataJsNode);
+        const output = await rService.getExposuresOutput(result as WebRDataJsNode, [{exposureType: "vax"}, {exposureType: "delta"}] as any);
         const lines = output.split("\n")
         expect(lines[0]).toBe("\"id\",\"day\",\"exposure\",\"value\"");
-        expect(lines[1]).toBe("1,1,1,0");
-        expect(lines[2]).toBe("1,2,2,1");
+        expect(lines[1]).toBe("1,1,\"vax\",0");
+        expect(lines[2]).toBe("1,2,\"delta\",1");
     })
 
     afterAll(() => {

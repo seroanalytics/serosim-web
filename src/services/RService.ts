@@ -29,9 +29,9 @@ export interface RService {
 
     runSerosim(state: AppState): Promise<WebRDataJs>;
 
-    getExposuresOutput(result: WebRDataJs): Promise<string>
+    getExposuresOutput(result: WebRDataJs, exposureTypes: ExposureType[]): Promise<string>
 
-    getSeroOutput(result: WebRDataJs): Promise<string>
+    getSeroOutput(result: WebRDataJs, biomarker: string): Promise<string>
 }
 
 export class WebRService implements RService {
@@ -162,24 +162,30 @@ export class WebRService implements RService {
             env);
     }
 
-    async getSeroOutput(result: WebRDataJs): Promise<string> {
+    async getSeroOutput(result: WebRDataJs, biomarker: string): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString(`
             tc <- textConnection("csv", "w") 
             sero <- as.data.frame(result$observed_biomarker_states)[c("i", "t", "b", "observed")]
+            sero$b <- "${biomarker}"
             write.table(sero, tc, row.names=F, col.names=c("id","day","biomarker","value"), sep=",")
             close(tc)
             paste0(csv, collapse="\n")
         `, {env})
     }
 
-    async getExposuresOutput(result: WebRDataJs): Promise<string> {
+    async getExposuresOutput(result: WebRDataJs, exposures: ExposureType[]): Promise<string> {
         await this.waitForReady();
-        const env = await new this._webR.REnvironment({result});
+        const exposureNames = exposures.map(e => e.exposureType)
+        const env = await new this._webR.REnvironment({result, exposure_names: exposureNames});
         return await this._webR.evalRString(`
             tc <- textConnection("csv", "w") 
-            write.table(result$immune_histories_long, tc, row.names=F, col.names=c("id","day","exposure","value"), sep=",")
+            exp <- as.data.frame(result$immune_histories_long)
+            exp$x <- as.factor(exp$x)
+            levels(exp$x) = exposure_names
+            exp$x <- as.character(exp$x)
+            write.table(exp, tc, row.names=F, col.names=c("id","day","exposure","value"), sep=",")
             close(tc)
             paste0(csv, collapse="\n")
         `, {env})

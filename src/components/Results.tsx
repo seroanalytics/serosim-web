@@ -58,7 +58,7 @@ export default function Results() {
     const downloadSerology = async () => {
         setDownloading(true);
         try {
-            const result = await rService.getSeroOutput(state.result);
+            const result = await rService.getSeroOutput(state.result, state.biomarker);
             let type = "text/csv", name = "sero.csv";
             downloader(result, type, name)
         } finally {
@@ -69,7 +69,7 @@ export default function Results() {
     const downloadExposures = async () => {
         setDownloading(true);
         try {
-            const result = await rService.getExposuresOutput(state.result);
+            const result = await rService.getExposuresOutput(state.result, state.exposureTypes);
             let type = "text/csv", name = "exposures.csv";
             downloader(result, type, name)
         } finally {
