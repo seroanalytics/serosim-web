@@ -28,6 +28,10 @@ export interface RService {
     getResultsJson(result: WebRDataJs): Promise<string>;
 
     runSerosim(state: AppState): Promise<WebRDataJs>;
+
+    getExposuresOutput(result: WebRDataJs): Promise<string>
+
+    getSeroOutput(result: WebRDataJs): Promise<string>
 }
 
 export class WebRService implements RService {
@@ -163,7 +167,8 @@ export class WebRService implements RService {
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString(`
             tc <- textConnection("csv", "w") 
-            write.table(result$observed_biomarker_states, tc, row.names=F, col.names=c("id","day","biomarker","i","value","observed"), sep=",")
+            sero <- as.data.frame(result$observed_biomarker_states)[c("i", "t", "b", "observed")]
+            write.table(sero, tc, row.names=F, col.names=c("id","day","biomarker","value"), sep=",")
             close(tc)
             paste0(csv, collapse="\n")
         `, {env})

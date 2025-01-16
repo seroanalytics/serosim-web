@@ -66,7 +66,7 @@ describe("WebRService", () => {
                     names: ["id", "t", "b", "i", "value", "observed"],
                     values: [
                         {
-                            type: "integer", names: null, values: [1, 1]
+                            type: "integer", names: null, values: [12, 17]
                         },
                         {
                             type: "integer", names: null, values: [1, 2]
@@ -78,10 +78,10 @@ describe("WebRService", () => {
                             type: "integer", names: null, values: [1, 1]
                         },
                         {
-                            type: "double", names: null, values: [1.1, 1.2]
+                            type: "double", names: null, values: [20, 21]
                         },
                         {
-                            type: "double", names: null, values: [1, 1]
+                            type: "double", names: null, values: [19.5, 21.2]
                         }
                     ]
                 }
@@ -89,9 +89,9 @@ describe("WebRService", () => {
         }
         const output = await rService.getSeroOutput(result as WebRDataJsNode);
         const lines = output.split("\n")
-        expect(lines[0]).toBe("\"id\",\"day\",\"biomarker\",\"i\",\"value\",\"observed\"");
-        expect(lines[1]).toBe("1,1,1,1,1.1,1");
-        expect(lines[2]).toBe("1,2,1,1,1.2,1");
+        expect(lines[0]).toBe("\"id\",\"day\",\"biomarker\",\"value\"");
+        expect(lines[1]).toBe("1,1,1,19.5");
+        expect(lines[2]).toBe("1,2,1,21.2");
     })
 
     it("can generate exposure histories output as csv", async () => {
