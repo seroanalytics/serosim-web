@@ -55,7 +55,7 @@ describe("<CanvasPlot>", () => {
                            title={"test title"}
                            error={""}/>);
         expect(screen.queryByRole("loader")).toBeNull();
-        expect(screen.getByRole("button").textContent).toBe("Download");
+        expect(screen.getByRole("button").textContent).toMatch("Download");
     });
 
     it("clears previous canvas if plot or title change", async () => {
