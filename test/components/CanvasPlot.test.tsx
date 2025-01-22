@@ -50,6 +50,14 @@ describe("<CanvasPlot>", () => {
         expect(screen.queryByTestId("test title")).not.toBe(null);
     });
 
+    it("renders download button if plot is not null", () => {
+        render(<CanvasPlot plot={new ImageBitmap()}
+                           title={"test title"}
+                           error={""}/>);
+        expect(screen.queryByRole("loader")).toBeNull();
+        expect(screen.getByRole("button").textContent).toBe("Download");
+    });
+
     it("clears previous canvas if plot or title change", async () => {
         const plot = await mockImageBitmap(50, 50)
         const view = render(<CanvasPlot plot={plot}
