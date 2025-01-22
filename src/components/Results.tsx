@@ -1,12 +1,17 @@
 import {Button, Col, Row} from "react-bootstrap";
 import React, {useState} from "react";
-import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
 import RunSerosim from "./RunSerosim";
 import {DownloadCloudIcon} from "lucide-react";
 import {ScaleLoader} from "react-spinners";
 import {useAppContext} from "../services/AppContextProvider";
 import {usePlot} from "../hooks/usePlot";
+import {CanvasPlot} from "./CanvasPlot";
+import {
+    downloadData,
+    createZipUri,
+    downloadUri
+} from "../services/downloadUtils";
 
 export default function Results() {
     const {state, rService} = useAppContext();
@@ -15,21 +20,26 @@ export default function Results() {
     const [kinetics, kineticsError] = usePlot("getIndividualKinetics",
         () => !!state.result,
         async () => {
-            return await rService.getIndividualKinetics(state.demography.rObj!!, state.result);
+            return await rService.getIndividualKineticsPlot(state.demography.rObj!!, state.result, state.demography.numIndividuals);
         },
-        [rService, state.demography, state.result], 0);
+        [rService, state.demography, state.result], 0)
 
     const [quantity, quantityError] = usePlot("getBiomarkerQuantity",
         () => !!state.result,
-        async () => await rService.getBiomarkerQuantity(state.result),
-        [rService, state.demography, state.result], 0);
+        async () => await rService.getBiomarkerQuantityPlot(state.result),
+        [rService, state.result], 0)
+
+    const [history, historyError] = usePlot("getImmuneHistories",
+        () => !!state.result,
+        async () => await rService.getImmuneHistoriesPlot(state.result),
+        [rService, state.result], 0)
 
     const downloadResults = async () => {
         setDownloading(true);
         try {
             const result = await rService.getResultsJson(state.result);
             let type = "application/json", name = "serosim.json";
-            downloader(result, type, name)
+            downloadData(result, type, name)
         } finally {
             setDownloading(false)
         }
@@ -38,9 +48,9 @@ export default function Results() {
     const downloadSerology = async () => {
         setDownloading(true);
         try {
-            const result = await rService.getSeroOutput(state.result, state.biomarker);
-            let type = "text/csv", name = "sero.csv";
-            downloader(result, type, name)
+            const result = await rService.getSeroOutputCSV(state.result, state.biomarker);
+            const type = "text/csv", name = "sero.csv";
+            downloadData(result, type, name)
         } finally {
             setDownloading(false)
         }
@@ -49,26 +59,25 @@ export default function Results() {
     const downloadExposures = async () => {
         setDownloading(true);
         try {
-            const result = await rService.getExposuresOutput(state.result, state.exposureTypes);
-            let type = "text/csv", name = "exposures.csv";
-            downloader(result, type, name)
+            const result = await rService.getExposuresOutputCSV(state.result, state.exposureTypes);
+            const type = "text/csv", name = "exposures.csv";
+            downloadData(result, type, name)
         } finally {
             setDownloading(false)
         }
     }
 
-    function downloadURI(uri: any, name: any) {
-        let link = document.createElement("a");
-        link.download = name;
-        link.href = uri;
-        link.click();
-    }
 
-    function downloader(data: any, type: any, name: any) {
-        let blob = new Blob([data], {type});
-        let url = window.URL.createObjectURL(blob);
-        downloadURI(url, name);
-        window.URL.revokeObjectURL(url);
+    const downloadPlots = async () => {
+        setDownloading(true);
+        try {
+            const images = [quantity, history, kinetics]
+                .filter(img => !!img) as ImageBitmap[]
+            const uri = await createZipUri(images)
+            downloadUri(uri, "serosim-plots.zip")
+        } finally {
+            setDownloading(false)
+        }
     }
 
     if (!state.steps[5].ready(state)) {
@@ -99,23 +108,41 @@ export default function Results() {
                                      onClick={downloadResults}
                                      variant={"secondary"}
                                      disabled={downloading}>
-                <DownloadCloudIcon/> Download all
+                <DownloadCloudIcon/> Download all serosim output
+            </Button>}
+            {state.result && history && quantity && kinetics && <Button size={"lg"}
+                                     className={"me-2"}
+                                     onClick={downloadPlots}
+                                     variant={"secondary"}
+                                     disabled={downloading}>
+                <DownloadCloudIcon/> Download output plots
             </Button>}
             <Row className={"mt-3"}>
+                <div id={"plot-output"}></div>
                 <Col>
                     <SectionError error={kineticsError}/>
                     {state.result &&
-                        <PlotlyPlot plot={kinetics}
-                                    hasTitle={true}
+                        <CanvasPlot plot={kinetics}
+                                    title={"kin"}
                                     error={kineticsError}/>}
                 </Col>
                 <Col>
                     <SectionError error={quantityError}/>
                     {state.result &&
-                        <PlotlyPlot plot={quantity}
-                                    hasTitle={true}
+                        <CanvasPlot plot={quantity}
+                                    title={"quantity"}
                                     error={quantityError}/>}
                 </Col>
+            </Row>
+            <Row className={"mt-2"}>
+                <Col>
+                    <SectionError error={historyError}/>
+                    {state.result &&
+                        <CanvasPlot plot={history}
+                                    title={"history"}
+                                    error={historyError}/>}
+                </Col>
+                <Col></Col>
             </Row>
         </Col>
     </Row>

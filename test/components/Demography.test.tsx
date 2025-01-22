@@ -109,4 +109,8 @@ describe("<Demography>", () => {
         });
     });
 
+    it("can download plot", () => {
+
+    });
+
 })

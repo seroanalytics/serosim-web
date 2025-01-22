@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Dict, PlotlyProps} from "../types";
+import {Dict} from "../types";
 
 class RunningOperationCounter {
     private _runningOperationCounter: Dict<number> = {}
@@ -31,13 +31,14 @@ const runningOperationCounter = new RunningOperationCounter()
 
 export const usePlot = (name: string,
                         condition: () => boolean,
-                        createPlot: () => Promise<PlotlyProps>,
+                        createPlot: () => Promise<ImageBitmap>,
                         deps: any[],
-                        delay: number):  [PlotlyProps | null, string] => {
+                        delay: number):  [ImageBitmap | null, string] => {
     const [error, setError] = useState<string>("");
-    const [plot, setPlot] = useState<PlotlyProps | null>(null);
+    const [plot, setPlot] = useState<ImageBitmap | null>(null);
 
     useEffect(() => {
+        setError("")
         if (condition()) {
             const handler = setTimeout(async () => {
                 setPlot(null);

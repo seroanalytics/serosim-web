@@ -1,11 +1,11 @@
 import React from "react";
 import {ActionType} from "../types";
-import {PlotlyPlot} from "./PlotlyPlot";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import SectionError from "./SectionError";
 import {useAppContext} from "../services/AppContextProvider";
 import {usePlot} from "../hooks/usePlot";
+import {CanvasPlot} from "./CanvasPlot";
 
 export function Demography() {
 
@@ -76,8 +76,7 @@ export function Demography() {
                 </Col>
                 <Col>
                     {(demography.numIndividuals > 0 && demography.tmax > 0) &&
-                        <PlotlyPlot plot={plot}
-                                    error={plotError}/>}
+                      <CanvasPlot plot={plot} title={"demography"} error={plotError}></CanvasPlot>}
                     {(!demography.numIndividuals || demography.numIndividuals < 1 || !demography.tmax || demography.tmax < 1) &&
                         <div className={"py-5 text-center"}>Choose a number of
                             individuals and max time greater than 0</div>}

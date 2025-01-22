@@ -7,6 +7,7 @@ import {
     mockKineticsModel,
     mockObsModel
 } from "./mocks";
+import {MockWebR} from "./mockWebR";
 
 jest.mock('webr');
 
@@ -16,7 +17,9 @@ describe("WebRService", () => {
         (WebR as Mock).mockClear()
     })
 
-    const rService = new WebRService();
+    const mockWebR = new MockWebR() as unknown as WebR
+    const rService = new WebRService(mockWebR);
+    rService.init()
 
     it("generates correct model parameters", async () => {
         const result = rService.getModelPars(mockAppState(
@@ -126,8 +129,13 @@ describe("WebRService", () => {
         ])
     });
 
-    it("", () => {
+    it("uses numIndividuals as upper bound for subset", async () => {
+        const spy = jest.spyOn(rService, "_generateBitmapImage" as any);
+        await rService.getIndividualKineticsPlot({} as any, {} as any, 7)
+        expect(spy.mock.calls[0][0]).toMatch("subset = 7")
 
-    })
+        await rService.getIndividualKineticsPlot({} as any, {} as any, 100)
+        expect(spy.mock.calls[1][0]).toMatch("subset = 10")
+    });
 
 });

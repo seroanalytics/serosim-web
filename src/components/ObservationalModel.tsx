@@ -2,11 +2,11 @@ import React from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
 import {ActionType} from "../types";
-import {PlotlyPlot} from "./PlotlyPlot";
 import SectionError from "./SectionError";
 import InlineFormSelect from "./InlineFormSelect";
 import {useAppContext} from "../services/AppContextProvider";
 import {usePlot} from "../hooks/usePlot";
+import {CanvasPlot} from "./CanvasPlot";
 
 export default function ObservationalModel() {
     const {state, dispatch, rService} = useAppContext();
@@ -54,7 +54,7 @@ export default function ObservationalModel() {
     }
 
     const [plot, plotError] = usePlot("obs_model",
-        () => obsModel.numBleeds > 0,
+        () => state.demography.tmax > 0 && state.demography.numIndividuals > 0 && obsModel.numBleeds > 0,
         async () => await rService.getObservationTimesPlot(obsModel.numBleeds, state.demography.numIndividuals, state.demography.tmax),
         [state.demography.tmax, state.demography.numIndividuals, obsModel.numBleeds],
         500)
@@ -97,11 +97,14 @@ export default function ObservationalModel() {
                     </Form>
                 </Col>
                 <Col>
-                    {obsModel.numBleeds >= 1 &&
-                        <PlotlyPlot plot={plot} error={plotError}/>}
+                    {obsModel.numBleeds >= 1 && state.demography.tmax > 0 && state.demography.numIndividuals > 0 &&
+                        <CanvasPlot plot={plot} error={plotError} title={"obs"}/>}
                     {obsModel.numBleeds < 1 &&
                         <div className={"py-5 text-center"}>Choose at least 1
                             bleed per person</div>}
+                    {(obsModel.numBleeds > 0 && !(state.demography.tmax > 0 && state.demography.numIndividuals > 0)) &&
+                        <div className={"py-5 text-center"}>Choose a number of
+                    individuals and max time greater than 0</div>}
                 </Col>
             </Row>
         </Col>
