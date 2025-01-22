@@ -50,3 +50,10 @@ export function mockAppState(state: Partial<AppState> = {}): AppState {
         ...state
     }
 }
+
+export async function mockImageBitmap(height: number, width: number) {
+    const ctx = new CanvasRenderingContext2D()
+    ctx.fillRect(0, 0, width, height);
+    const imagedata = ctx.getImageData(0, 0, width, height);
+    return await createImageBitmap(imagedata)
+}

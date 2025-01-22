@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Dict} from "../types";
+import {Dict, PlotlyProps} from "../types";
 
 class RunningOperationCounter {
     private _runningOperationCounter: Dict<number> = {}
@@ -29,16 +29,15 @@ const runningOperationCounter = new RunningOperationCounter()
 // set once the last requested calculation has resolved. This avoids the plot being
 // set to an output that doesn't match the inputs while a recalculation is still running.
 
-export const usePlot = (name: string,
+export const useCanvasPlot = (name: string,
                         condition: () => boolean,
-                        createPlot: () => Promise<ImageBitmap>,
+                        createPlot: () => Promise<PlotlyProps>,
                         deps: any[],
-                        delay: number):  [ImageBitmap | null, string] => {
+                        delay: number):  [PlotlyProps | null, string] => {
     const [error, setError] = useState<string>("");
-    const [plot, setPlot] = useState<ImageBitmap | null>(null);
+    const [plot, setPlot] = useState<PlotlyProps | null>(null);
 
     useEffect(() => {
-        setError("")
         if (condition()) {
             const handler = setTimeout(async () => {
                 setPlot(null);

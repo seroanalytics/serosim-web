@@ -1,11 +1,6 @@
 import {WebRService} from "../src/services/RService";
 import {WebRDataJsNode} from "webr/dist/webR/robj";
-import {
-    mockAppState,
-    mockExposureType, mockImmunityModel,
-    mockKineticsModel,
-    mockObsModel
-} from "./mocks";
+import {mockKineticsModel} from "./mocks";
 
 describe("WebRService integration", () => {
 
@@ -41,30 +36,30 @@ describe("WebRService integration", () => {
             ]
         }
         const result = await rService.getDemographyPlot(demography as WebRDataJsNode);
-        expect(result.data.length).toBe(1);
-        expect(result.layout.xaxis).not.toBeNull();
+        expect(result.width).toBeGreaterThan(0);
+        expect(result.height).toBeGreaterThan(0);
     });
 
     it("can generate observation plot", async () => {
         const result = await rService.getObservationTimesPlot(1, 10, 10);
-        expect(result.data.length).toBe(1);
-        expect(result.layout.xaxis).not.toBeNull();
+        expect(result.width).toBeGreaterThan(0);
+        expect(result.height).toBeGreaterThan(0);
     });
 
     it("can generate kinetics plot with biphasic antibody model", async () => {
-        const spy = jest.spyOn(rService, "_generatePlot" as any);
+        const spy = jest.spyOn(rService, "_generateBitmapImage" as any);
         const result = await rService.getKineticsPlot("biphasic", [{exposureType: "vax"}] as any, {"vax": mockKineticsModel()}, 2, 5);
-        expect(result.data.length).toBe(2);
-        expect(result.layout.xaxis).not.toBeNull();
-        expect(spy.mock.calls[0][0]).toMatch("serosim::plot_antibody_model(serosim::antibody_model_biphasic, N=2,times=seq(1,5,by=1)");
+        expect(result.width).toBeGreaterThan(0);
+        expect(result.height).toBeGreaterThan(0);
+        expect(spy.mock.calls[0][0]).toMatch("print(serosim::plot_antibody_model(serosim::antibody_model_biphasic, N=2,times=seq(1,5,by=1))");
     });
 
     it("can generate kinetics plot with monophasic antibody model", async () => {
-        const spy = jest.spyOn(rService, "_generatePlot" as any);
+        const spy = jest.spyOn(rService, "_generateBitmapImage" as any);
         const result = await rService.getKineticsPlot("monophasic", [{exposureType: "vax"}] as any, {"vax": mockKineticsModel()}, 2, 5);
-        expect(result.data.length).toBe(2);
-        expect(result.layout.xaxis).not.toBeNull();
-        expect(spy.mock.calls[0][0]).toMatch("serosim::plot_antibody_model(serosim::antibody_model_monophasic, N=2,times=seq(1,5,by=1)");
+        expect(result.width).toBeGreaterThan(0);
+        expect(result.height).toBeGreaterThan(0);
+        expect(spy.mock.calls[0][0]).toMatch("print(serosim::plot_antibody_model(serosim::antibody_model_monophasic, N=2,times=seq(1,5,by=1))");
     });
 
     it("can generate sero output as csv", async () => {
@@ -98,7 +93,7 @@ describe("WebRService integration", () => {
                 }
             ]
         }
-        const output = await rService.getSeroOutput(result as WebRDataJsNode, "IgG");
+        const output = await rService.getSeroOutputCSV(result as WebRDataJsNode, "IgG");
         const lines = output.split("\n")
         expect(lines[0]).toBe("\"id\",\"day\",\"biomarker\",\"value\"");
         expect(lines[1]).toBe("1,1,\"IgG\",19.5");
@@ -130,7 +125,7 @@ describe("WebRService integration", () => {
                 }
             ]
         }
-        const output = await rService.getExposuresOutput(result as WebRDataJsNode, [{exposureType: "vax"}, {exposureType: "delta"}] as any);
+        const output = await rService.getExposuresOutputCSV(result as WebRDataJsNode, [{exposureType: "vax"}, {exposureType: "delta"}] as any);
         const lines = output.split("\n")
         expect(lines[0]).toBe("\"id\",\"day\",\"exposure\",\"value\"");
         expect(lines[1]).toBe("1,1,\"vax\",0");

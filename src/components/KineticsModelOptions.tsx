@@ -18,7 +18,7 @@ export default function KineticsModelOptions({exposureType}: {
 
     const isBiphasic = state.kineticsFunction === "biphasic";
 
-    return <Form className={"pt-3 mt-2 border px-2"}>
+    return <Form className={"pt-3 mb-2 border px-2"}>
         <h5 className={"pb-2"}>
             {exposureType}
         </h5><Row>

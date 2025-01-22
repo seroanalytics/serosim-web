@@ -145,8 +145,31 @@ describe("<ObservationalModel/>", () => {
         expect(rService.getObservationTimesPlot.mock.calls.length).toBe(0);
     })
 
-    it("renders plot if numBleeds >= 1", async () => {
+    it("does not render plot if demography is missing", () => {
         const state = mockAppState({observationalModel: mockObsModel({numBleeds: 1})});
+        const dispatch = jest.fn();
+        const rService = new MockRService();
+
+        render(
+            <AppContext.Provider
+                value={{dispatch, state, rService}}><ObservationalModel/>
+            </AppContext.Provider>);
+
+        expect(screen.getAllByText("Choose a number of individuals and max time greater than 0").length).toBe(1);
+        expect(rService.getObservationTimesPlot.mock.calls.length).toBe(0);
+    })
+
+    it("renders plot if numBleeds >= 1 and demography is populated", async () => {
+        const state = mockAppState({
+            observationalModel: mockObsModel({numBleeds: 1}),
+            demography: {
+                numIndividuals: 1,
+                tmax: 1,
+                rObj: null,
+                pRemoval: 0.1,
+                requireRecalculation: false
+            }
+        });
         const dispatch = jest.fn();
         const rService = new MockRService();
 

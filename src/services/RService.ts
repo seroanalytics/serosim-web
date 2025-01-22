@@ -4,34 +4,39 @@ import {
     KineticsModel,
     Dict,
     ExposureType,
-    ImmunityModel, ObservationalModel,
-    PlotlyProps
+    ImmunityModel, ObservationalModel
 } from "../types";
 import {WebRDataJs} from "webr/dist/webR/robj";
 
 export interface RService {
 
-    getKineticsPlot(kineticsFunction: "monophasic" | "biphasic", exposureTypes: ExposureType[], kinetics: Dict<KineticsModel>, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
-
     getDemography(numIndividuals: number, tmax: number, pRemoval: number): Promise<WebRDataJs>;
 
-    getDemographyPlot(demographyObj: WebRDataJs): Promise<PlotlyProps>;
+    // input data plots
 
-    getImmunityPlot(max: number, midpoint: number, variance: number): Promise<PlotlyProps>;
+    getKineticsPlot(kineticsFunction: "monophasic" | "biphasic", exposureTypes: ExposureType[], kinetics: Dict<KineticsModel>, numIndividuals: number, tmax: number): Promise<ImageBitmap>;
 
-    getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number): Promise<PlotlyProps>;
+    getDemographyPlot(demography: WebRDataJs): Promise<ImageBitmap>;
 
-    getBiomarkerQuantity(result: WebRDataJs): Promise<PlotlyProps>;
+    getImmunityPlot(max: number, midpoint: number, variance: number): Promise<ImageBitmap>;
 
-    getIndividualKinetics(demography: WebRDataJs, result: WebRDataJs): Promise<PlotlyProps>;
-
-    getResultsJson(result: WebRDataJs): Promise<string>;
+    getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number): Promise<ImageBitmap>;
 
     runSerosim(state: AppState): Promise<WebRDataJs>;
 
-    getExposuresOutput(result: WebRDataJs, exposureTypes: ExposureType[]): Promise<string>
+    // outputs
 
-    getSeroOutput(result: WebRDataJs, biomarker: string): Promise<string>
+    getBiomarkerQuantityPlot(result: WebRDataJs): Promise<ImageBitmap>
+
+    getIndividualKineticsPlot(demography: WebRDataJs, result: WebRDataJs, numIndividuals: number): Promise<ImageBitmap>;
+
+    getImmuneHistoriesPlot(result: WebRDataJs): Promise<ImageBitmap>
+
+    getResultsJson(result: WebRDataJs): Promise<string>;
+
+    getExposuresOutputCSV(result: WebRDataJs, exposureTypes: ExposureType[]): Promise<string>
+
+    getSeroOutputCSV(result: WebRDataJs, biomarker: string): Promise<string>
 }
 
 export class WebRService implements RService {
@@ -39,16 +44,17 @@ export class WebRService implements RService {
     private _webR: WebR
     private _ready = false
 
-    private async _generatePlot(plottingCode: string, env?: REnvironment): Promise<PlotlyProps> {
+    private async _generateBitmapImage(plottingCode: string, env?: REnvironment): Promise<ImageBitmap> {
+
         await this.waitForReady();
         if (!env) {
             env = await new this._webR.REnvironment()
         }
-        const plotlyData = await this._webR.evalRString(`
-            p <- ${plottingCode}               
-            plotly::plotly_json(p, pretty = FALSE)
-        `, {env});
-        return JSON.parse(plotlyData)
+        const shelter = await new this._webR.Shelter()
+        const capture = await shelter.captureR(plottingCode, {env});
+
+        await shelter.purge();
+        return capture.images[0];
     }
 
     constructor(webR: WebR = new WebR()) {
@@ -71,9 +77,9 @@ export class WebRService implements RService {
     async init() {
         console.log("Initialising R")
         await this._webR.init();
-        await this._webR.installPackages(['plotly', 'ggplot2', 'viridis']);
+        await this._webR.installPackages(['ggplot2', 'viridis', 'jsonlite']);
         await this._webR.installPackages(['serosim'], {repos: [this.getRepoUrl(), "https://repo.r-wasm.org/"]});
-
+        await this._webR.evalRVoid('options(device=webr::canvas)');
         this._ready = true
     }
 
@@ -91,32 +97,33 @@ export class WebRService implements RService {
         }
     }
 
-    async getDemographyPlot(demography: WebRDataJs): Promise<PlotlyProps> {
+    async getDemographyPlot(demography: WebRDataJs): Promise<ImageBitmap> {
         await this.waitForReady();
         const demographyRObj = await new this._webR.RObject(demography);
         try {
             const env = await new this._webR.REnvironment({demography: demographyRObj});
-            return await this._generatePlot(`
-               ggplot2::ggplot(as.data.frame(demography)) + 
+            return await this._generateBitmapImage(`
+               print(ggplot2::ggplot(as.data.frame(demography)) + 
                 ggplot2::geom_segment(ggplot2::aes(y = i, yend = i, x = birth, xend = removal - 1), linewidth = 2, alpha = 0.2, color = "gray85") + 
-                ggplot2::theme_minimal() + ggplot2::labs(x = "Time in study", y = "Individuals")  + 
-                ggplot2::theme(axis.text.y = ggplot2::element_blank())`, env
+                ggplot2::labs(x = "Time in study", y = "Individuals")  + 
+                ggplot2::theme_bw() +
+                ggplot2::theme(axis.text.y = ggplot2::element_blank()))`, env
             )
         } finally {
             await this._webR.destroy(demographyRObj)
         }
     }
 
-    async getImmunityPlot(max: number, midpoint: number, variance: number) {
+    async getImmunityPlot(max: number, midpoint: number, variance: number): Promise<ImageBitmap> {
         await this.waitForReady();
-        return await this._generatePlot(`
-               serosim::plot_biomarker_mediated_protection(0:${max}, 
+        return await this._generateBitmapImage(`
+               print(serosim::plot_biomarker_mediated_protection(0:${max}, 
                         biomarker_prot_midpoint=${midpoint},
-                        biomarker_prot_width=${variance})`
+                        biomarker_prot_width=${variance}))`
         )
     }
 
-    async getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number) {
+    async getObservationTimesPlot(numBleeds: number, numIndividuals: number, tmax: number): Promise<ImageBitmap> {
         await this.waitForReady();
         const observationTimes = await this._webR.evalR(`
                    do.call(rbind, lapply(1:${numIndividuals}, function(i) {
@@ -129,40 +136,41 @@ export class WebRService implements RService {
         )
         try {
             const env = await new this._webR.REnvironment({observation_times: observationTimes});
-            return await this._generatePlot(`
-            ggplot2::ggplot(observation_times) + 
+            return await this._generateBitmapImage(`
+            p <- ggplot2::ggplot(observation_times) + 
                         ggplot2::geom_point(ggplot2::aes(y = id, x = t), color = "red")
+            print(p)
             `, env)
         } finally {
             await this._webR.destroy(observationTimes)
         }
     }
 
-    async getIndividualKinetics(demography: WebRDataJs, result: WebRDataJs) {
+    async getIndividualKineticsPlot(demography: WebRDataJs, result: WebRDataJs, numIndividuals: number): Promise<ImageBitmap> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({demography, result});
-        return await this._generatePlot(`
-            serosim::plot_subset_individuals_history(as.data.frame(result$biomarker_states), 
-                                                     as.data.frame(result$immune_histories_long), subset = 10, as.data.frame(demography))`, env);
+        const subset = Math.min(numIndividuals, 10)
+        return await this._generateBitmapImage(`
+            print(serosim::plot_subset_individuals_history(as.data.frame(result$biomarker_states), 
+                                                     as.data.frame(result$immune_histories_long), subset = ${subset}, as.data.frame(demography)))`, env);
     }
 
-    async getImmuneHistories(result: WebRDataJs): Promise<PlotlyProps> {
+    async getImmuneHistoriesPlot(result: WebRDataJs): Promise<ImageBitmap> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
-        return await this._generatePlot(
-            "serosim::plot_immune_histories(as.data.frame(result$immune_histories_long))",
+        return await this._generateBitmapImage(
+            "print(serosim::plot_immune_histories(as.data.frame(result$immune_histories_long)))",
             env);
     }
 
-    async getBiomarkerQuantity(result: WebRDataJs): Promise<PlotlyProps> {
+    async getBiomarkerQuantityPlot(result: WebRDataJs): Promise<ImageBitmap> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
-        return await this._generatePlot(
-            "serosim::plot_biomarker_quantity(as.data.frame(result$biomarker_states))",
-            env);
+        return this._generateBitmapImage("print(serosim::plot_biomarker_quantity(as.data.frame(result$biomarker_states)))",
+            env)
     }
 
-    async getSeroOutput(result: WebRDataJs, biomarker: string): Promise<string> {
+    async getSeroOutputCSV(result: WebRDataJs, biomarker: string): Promise<string> {
         await this.waitForReady();
         const env = await new this._webR.REnvironment({result});
         return await this._webR.evalRString(`
@@ -175,7 +183,7 @@ export class WebRService implements RService {
         `, {env})
     }
 
-    async getExposuresOutput(result: WebRDataJs, exposures: ExposureType[]): Promise<string> {
+    async getExposuresOutputCSV(result: WebRDataJs, exposures: ExposureType[]): Promise<string> {
         await this.waitForReady();
         const exposureNames = exposures.map(e => e.exposureType)
         const env = await new this._webR.REnvironment({
@@ -211,10 +219,10 @@ export class WebRService implements RService {
                 biomarker_map: biomarkerMap,
                 facet_labeller: facetLabeller
             });
-            return await this._generatePlot(
-                `serosim::plot_antibody_model(serosim::antibody_model_${kineticsFunction}, N=${numIndividuals},times=seq(1,${tmax},by=1),
+            return await this._generateBitmapImage(
+                `print(serosim::plot_antibody_model(serosim::antibody_model_${kineticsFunction}, N=${numIndividuals},times=seq(1,${tmax},by=1),
              model_pars=model_pars, draw_parameters_fn = serosim::draw_parameters_random_fx, biomarker_map=as.data.frame(biomarker_map)) +
-             ggplot2::guides(color = "none") + ggplot2::facet_wrap(~exposure_id,scales="free_y", labeller = ggplot2::as_labeller(facet_labeller), ncol =1)
+             ggplot2::guides(color = "none") + ggplot2::facet_wrap(~exposure_id,scales="free_y", labeller = ggplot2::as_labeller(facet_labeller), ncol =1))
             `, env);
         } finally {
             await this._webR.destroy(facetLabeller)

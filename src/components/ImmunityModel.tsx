@@ -1,11 +1,11 @@
 import React from "react";
 import {Col, Form, Row} from "react-bootstrap";
 import InlineFormControl from "./InlineFormControl";
-import {PlotlyPlot} from "./PlotlyPlot";
 import {ActionType} from "../types";
 import SectionError from "./SectionError";
 import {useAppContext} from "../services/AppContextProvider";
 import {usePlot} from "../hooks/usePlot";
+import {CanvasPlot} from "./CanvasPlot";
 
 export default function ImmunityModel() {
 
@@ -81,7 +81,7 @@ export default function ImmunityModel() {
                 </Col>
                 <Col>
                     {(immunityModel.max > 0 && immunityModel.midpoint > 0) &&
-                        <PlotlyPlot plot={plot} error={plotError}/>}
+                        <CanvasPlot plot={plot} error={plotError} title={"immunity"}/>}
                     {(immunityModel.max < 1 || immunityModel.midpoint < 1) &&
                         <div className={"py-5 text-center"}>Choose a valid max
                             and midpoint</div>}

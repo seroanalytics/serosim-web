@@ -1,12 +1,12 @@
 import {Col, Row} from "react-bootstrap";
 import React from "react";
-import {PlotlyPlot} from "./PlotlyPlot";
 import {ActionType} from "../types";
 import SectionError from "./SectionError";
 import {useAppContext} from "../services/AppContextProvider";
 import KineticsModelOptions from "./KineticsModelOptions";
 import InlineFormSelect from "./InlineFormSelect";
 import {usePlot} from "../hooks/usePlot";
+import {CanvasPlot} from "./CanvasPlot";
 
 export function AntibodyKinetics() {
     const {state, rService, dispatch} = useAppContext();
@@ -18,7 +18,7 @@ export function AntibodyKinetics() {
         },
         [rService, state.exposureTypes, state.kinetics, state.demography.numIndividuals, state.demography.tmax, state.kineticsFunction],
         750
-    );
+    )
 
     const setKineticFunction = (newValue: number) => {
         dispatch({
@@ -53,7 +53,7 @@ export function AntibodyKinetics() {
                         key={e.exposureType} exposureType={e.exposureType}/>)}
                 </Col>
                 <Col>
-                    <PlotlyPlot plot={plot} error={plotError}></PlotlyPlot>
+                    <CanvasPlot plot={plot} error={plotError} title={"antibody"}></CanvasPlot>
                 </Col>
             </Row>
         </Col>
