@@ -6,6 +6,7 @@ import React from "react";
 import {Demography} from "../../src/components/Demography";
 import {userEvent} from "@testing-library/user-event";
 import {ActionType} from "../../src/types";
+import {rootReducer} from "../../src/rootReducer";
 
 describe("<Demography>", () => {
 
@@ -106,5 +107,69 @@ describe("<Demography>", () => {
             type: ActionType.SET_DEMOGRAPHY,
             payload: {pRemoval: 1}
         });
+    });
+
+    it("recalculates demography on scenario load if params have changed", async () => {
+        jest.spyOn(global, "setTimeout")
+        let state = mockAppState({
+            demography: {
+                tmax: 10,
+                numIndividuals: 10,
+                pRemoval: 0.1,
+                rObj: null
+            }
+        });
+        const dispatch = jest.fn();
+        const rService = new MockRService();
+
+        const view = render(
+            <AppContext.Provider
+                value={{dispatch, state, rService}}><Demography/>
+            </AppContext.Provider>);
+
+        expect((setTimeout as unknown as jest.Mock).mock.calls.length).toBe(1);
+
+        state = rootReducer(state, {
+            type: ActionType.LOAD_SCENARIO,
+            payload: "measles"
+        });
+
+        view.rerender(<AppContext.Provider
+            value={{dispatch, state, rService}}><Demography/>
+        </AppContext.Provider>)
+
+        expect((setTimeout as unknown as jest.Mock).mock.calls.length).toBe(2);
+    });
+
+    it("does not recalculate demography on scenario load if params have not changed", async () => {
+        jest.spyOn(global, "setTimeout")
+        let state = mockAppState({
+            demography: {
+                tmax: 100,
+                numIndividuals: 100,
+                pRemoval: 1,
+                rObj: null
+            }
+        });
+        const dispatch = jest.fn();
+        const rService = new MockRService();
+
+        const view = render(
+            <AppContext.Provider
+                value={{dispatch, state, rService}}><Demography/>
+            </AppContext.Provider>);
+
+        expect((setTimeout as unknown as jest.Mock).mock.calls.length).toBe(1);
+
+        state = rootReducer(state, {
+            type: ActionType.LOAD_SCENARIO,
+            payload: "measles"
+        });
+
+        view.rerender(<AppContext.Provider
+            value={{dispatch, state, rService}}><Demography/>
+        </AppContext.Provider>)
+
+        expect((setTimeout as unknown as jest.Mock).mock.calls.length).toBe(1);
     });
 });
