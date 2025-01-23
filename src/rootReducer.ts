@@ -66,7 +66,7 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
         case ActionType.R_READY:
             return {
                 ...state,
-                rReady: true
+                rReady: action.payload
             }
         default:
             console.warn(`Unrecognised action type: ${action.type}`)

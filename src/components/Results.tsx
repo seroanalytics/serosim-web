@@ -110,11 +110,11 @@ export default function Results() {
                                      disabled={downloading}>
                 <DownloadCloudIcon/> Download all serosim output
             </Button>}
-            {state.result && history && quantity && kinetics && <Button size={"lg"}
+            {state.result && <Button size={"lg"}
                                      className={"me-2"}
                                      onClick={downloadPlots}
                                      variant={"secondary"}
-                                     disabled={downloading}>
+                                     disabled={downloading || !history || !quantity || !kinetics}>
                 <DownloadCloudIcon/> Download output plots
             </Button>}
             <Row className={"mt-3"}>
@@ -123,14 +123,14 @@ export default function Results() {
                     <SectionError error={kineticsError}/>
                     {state.result &&
                         <CanvasPlot plot={kinetics}
-                                    title={"kin"}
+                                    title={"individual-biomarker-kinetics"}
                                     error={kineticsError}/>}
                 </Col>
                 <Col>
                     <SectionError error={quantityError}/>
                     {state.result &&
                         <CanvasPlot plot={quantity}
-                                    title={"quantity"}
+                                    title={"true-biomarker-quantity"}
                                     error={quantityError}/>}
                 </Col>
             </Row>
@@ -139,7 +139,7 @@ export default function Results() {
                     <SectionError error={historyError}/>
                     {state.result &&
                         <CanvasPlot plot={history}
-                                    title={"history"}
+                                    title={"individual-immune-history"}
                                     error={historyError}/>}
                 </Col>
                 <Col></Col>

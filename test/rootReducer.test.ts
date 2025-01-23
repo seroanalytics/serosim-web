@@ -35,4 +35,20 @@ describe("rootReducer", () => {
             waneShort: 0
         })
     });
+
+    it("sets RReady", () => {
+        let action: Action = {
+            type: ActionType.R_READY,
+            payload: true
+        }
+        const state = mockAppState();
+        let result = rootReducer(state, action);
+        expect(result.rReady).toBe(true);
+        action = {
+            type: ActionType.R_READY,
+            payload: false
+        }
+        result = rootReducer(state, action);
+        expect(result.rReady).toBe(false);
+    })
 });
