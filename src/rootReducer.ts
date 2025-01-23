@@ -22,18 +22,17 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
         case ActionType.ADD_EXPOSURE_TYPE:
             return addExposureType(state, action.payload)
         case ActionType.REMOVE_EXPOSURE_TYPE:
-            return {
-                ...state,
-                result: null,
-                exposureTypes: [...state.exposureTypes
-                    .filter(p => p.exposureType !== action.payload.exposureType)]
-            }
+            return removeExposureType(state, action.payload)
         case ActionType.SET_IMMUNITY_MODEL:
             return setImmunityModel(state, action.payload)
         case ActionType.SET_OBSERVATION_MODEL:
             return setObservationalModel(state, action.payload)
         case ActionType.SET_KINETICS_FUNCTION:
-            return {...state, kineticsFunction: action.payload}
+            return {
+                ...state,
+                inputsChanged: true,
+                kineticsFunction: action.payload
+            }
         case ActionType.SET_KINETICS:
             return setKinetics(state, action.payload)
         case ActionType.SET_BIOMARKER:
@@ -41,6 +40,7 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
         case ActionType.SET_DEMOGRAPHY:
             return {
                 ...state,
+                inputsChanged: true,
                 result: null,
                 demography: {
                     ...state.demography,
@@ -50,7 +50,12 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
         case ActionType.SET_RESULTS:
             return {
                 ...state,
-                result: action.payload
+                result: state.inputsChanged ? null : action.payload
+            }
+        case ActionType.INPUTS_CHANGED:
+            return {
+                ...state,
+                inputsChanged: action.payload
             }
         case ActionType.R_READY:
             return {
@@ -65,22 +70,7 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
 
 function setBiomarker(state: AppState, payload: string) {
     const newState = {...state, biomarker: payload, result: null}
-    if (!newState.immunityModel) {
-        newState.immunityModel = {
-            max: 0,
-            midpoint: 0,
-            variance: 0
-        }
-    }
-    if (!newState.observationalModel) {
-        newState.observationalModel = {
-            error: 0,
-            lowerBound: 0,
-            upperBound: 0,
-            numBleeds: 0,
-            type: "unbounded"
-        }
-    }
+    newState.inputsChanged = true;
     return newState
 }
 
@@ -88,18 +78,32 @@ function addExposureType(state: AppState, payload: ExposureType) {
     const newState = {...state, result: null}
     if (!newState.kinetics[payload.exposureType]) {
         newState.kinetics[payload.exposureType] = {
-                boost: 0,
-                boostShort: 0,
-                waneShort: 0,
-                wane: 0
+            boost: 0,
+            boostShort: 0,
+            waneShort: 0,
+            wane: 0
         }
     }
     newState.exposureTypes = [...state.exposureTypes, payload]
+    newState.inputsChanged = true;
+    return newState
+}
+
+function removeExposureType(state: AppState, payload: ExposureType) {
+    const newState = {
+        ...state,
+        result: null,
+        inputsChanged: true,
+        exposureTypes: [...state.exposureTypes
+            .filter(p => p.exposureType !== payload.exposureType)]
+    }
+    delete newState.kinetics[payload.exposureType];
     return newState
 }
 
 function setImmunityModel(state: AppState, payload: ImmunityModel) {
     const newState = {...state, result: null}
+    newState.inputsChanged = true;
     newState.immunityModel = {...state.immunityModel, ...payload}
     return newState
 }
@@ -107,6 +111,7 @@ function setImmunityModel(state: AppState, payload: ImmunityModel) {
 function setObservationalModel(state: AppState, payload: ObservationalModel) {
     const newState = {...state, result: null}
     newState.observationalModel = {...state.observationalModel, ...payload}
+    newState.inputsChanged = true;
     return newState
 }
 
@@ -115,6 +120,7 @@ function setKinetics(state: AppState, payload: {
     model: KineticsModel
 }) {
     const newState = {...state, result: null}
+    newState.inputsChanged = true;
     newState.kinetics = {...state.kinetics}
     newState.kinetics[payload.exposureType] = {...state.kinetics[payload.exposureType], ...payload.model}
     return newState

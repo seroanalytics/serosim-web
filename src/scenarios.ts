@@ -96,6 +96,7 @@ const measles: AppState = {
         variance: 1
     },
     result: null,
+    inputsChanged: false,
     steps: steps
 }
 
@@ -119,7 +120,8 @@ export const empty: AppState = {
     },
     result: null,
     steps: steps,
-    biomarker: ""
+    biomarker: "",
+    inputsChanged: false
 }
 
 export const scenarios: Dict<AppState> = {

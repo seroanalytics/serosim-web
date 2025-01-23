@@ -61,6 +61,7 @@ export interface AppState {
     demography: Demography
     rReady: boolean
     result: any
+    inputsChanged: boolean
     steps: Step[]
 }
 
@@ -73,6 +74,7 @@ export enum ActionType {
     SET_KINETICS_FUNCTION = "SET_KINETICS_FUNCTION",
     SET_KINETICS = "SET_KINETICS",
     SET_RESULTS = "SET_RESULTS",
+    INPUTS_CHANGED = "INPUTS_CHANGED",
     SET_DEMOGRAPHY = "SET_DEMOGRAPHY",
     R_READY = "R_READY",
     LOAD_SCENARIO = "LOAD_SCENARIO"

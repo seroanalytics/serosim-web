@@ -1,5 +1,5 @@
 import {Button, Col, Row} from "react-bootstrap";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ActionType} from "../types";
 import {ScaleLoader} from "react-spinners";
 import SectionError from "./SectionError";
@@ -18,6 +18,10 @@ export default function RunSerosim() {
             type: ActionType.SET_RESULTS,
             payload: null
         });
+        dispatch({
+            type: ActionType.INPUTS_CHANGED,
+            payload: false
+        })
         try {
             const result = await rService.runSerosim(state)
             dispatch({
@@ -29,6 +33,10 @@ export default function RunSerosim() {
         }
         setLoading(false);
     }
+
+    useEffect(() => {
+        setError("")
+    }, [state.inputsChanged]);
 
     return <Row className={"my-2"}>
         <Col>{loading && <ScaleLoader/>}
