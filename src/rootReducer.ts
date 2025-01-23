@@ -90,13 +90,15 @@ function addExposureType(state: AppState, payload: ExposureType) {
 }
 
 function removeExposureType(state: AppState, payload: ExposureType) {
-    return {
+    const newState = {
         ...state,
         result: null,
         inputsChanged: true,
         exposureTypes: [...state.exposureTypes
             .filter(p => p.exposureType !== payload.exposureType)]
     }
+    delete newState.kinetics[payload.exposureType];
+    return newState
 }
 
 function setImmunityModel(state: AppState, payload: ImmunityModel) {

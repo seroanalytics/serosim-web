@@ -160,4 +160,43 @@ describe("rootReducer", () => {
         const result = rootReducer(state, action);
         expect(result.result).toBe(null);
     });
+
+    it("can add exposure type", () => {
+        const state = mockAppState({
+            exposureTypes: []
+        })
+        const action = {
+            type: ActionType.ADD_EXPOSURE_TYPE,
+            payload: mockExposureType({
+                exposureType: "test"
+            })
+        }
+        const result = rootReducer(state, action);
+        expect(result.exposureTypes[0]).toEqual(mockExposureType(
+            {
+                exposureType: "test"
+            }
+        ));
+        expect(state.kinetics["test"]).toEqual(mockKineticsModel());
+    })
+
+    it("can remove exposure type", () => {
+        const state = mockAppState({
+            exposureTypes: [mockExposureType({
+                exposureType: "test"
+            })],
+            kinetics: {
+                "test": mockKineticsModel()
+            }
+        })
+        const action = {
+            type: ActionType.REMOVE_EXPOSURE_TYPE,
+            payload: mockExposureType({
+                exposureType: "test"
+            })
+        }
+        const result = rootReducer(state, action);
+        expect(result.exposureTypes.length).toBe(0);
+        expect(Object.keys(result.kinetics).length).toBe(0);
+    })
 });
