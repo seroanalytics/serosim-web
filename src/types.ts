@@ -59,7 +59,6 @@ export interface AppState {
     observationalModel: ObservationalModel
     immunityModel: ImmunityModel
     demography: Demography
-    genericErrors: string[]
     rReady: boolean
     result: any
     steps: Step[]

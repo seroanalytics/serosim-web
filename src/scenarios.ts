@@ -47,7 +47,6 @@ const initialDemography = {
 }
 
 const measles: AppState = {
-    genericErrors: [],
     biomarker: "IgG",
     exposureTypes: [
         {
@@ -101,7 +100,6 @@ const measles: AppState = {
 }
 
 export const empty: AppState = {
-    genericErrors: [],
     exposureTypes: [],
     demography: initialDemography,
     rReady: false,
