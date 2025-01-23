@@ -30,7 +30,6 @@ describe("<Demography>", () => {
                 tmax: 10,
                 numIndividuals: 10,
                 pRemoval: 0.1,
-                requireRecalculation: true,
                 rObj: null
             }
         });
@@ -108,9 +107,4 @@ describe("<Demography>", () => {
             payload: {pRemoval: 1}
         });
     });
-
-    it("can download plot", () => {
-
-    });
-
-})
+});

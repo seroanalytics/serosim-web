@@ -23,7 +23,7 @@ export default function LoadScenarios() {
     return <div><p>Preconfigured scenarios:</p>
         <Button className={"me-2"} variant={"primary"}
                 onClick={loadMeasles}>Measles</Button>
-        <Button onClick={reset} variant={"secondary"}>Reset all
+        <Button onClick={reset} variant={"light"}>Reset all
             fields</Button>
     </div>
 }

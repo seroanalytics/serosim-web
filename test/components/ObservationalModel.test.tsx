@@ -166,8 +166,7 @@ describe("<ObservationalModel/>", () => {
                 numIndividuals: 1,
                 tmax: 1,
                 rObj: null,
-                pRemoval: 0.1,
-                requireRecalculation: false
+                pRemoval: 0.1
             }
         });
         const dispatch = jest.fn();

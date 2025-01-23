@@ -42,7 +42,6 @@ export interface Demography {
     numIndividuals: number
     tmax: number
     pRemoval: number
-    requireRecalculation: boolean
 }
 
 export interface Step {
@@ -60,16 +59,12 @@ export interface AppState {
     observationalModel: ObservationalModel
     immunityModel: ImmunityModel
     demography: Demography
-    genericErrors: string[]
     rReady: boolean
     result: any
     steps: Step[]
 }
 
 export enum ActionType {
-    ERROR_ADDED = "ERROR_ADDED",
-    ERROR_DISMISSED = "ERROR_DISMISSED",
-    CLEAR_ALL_ERRORS = "CLEAR_ALL_ERRORS",
     ADD_EXPOSURE_TYPE = "ADD_EXPOSURE_TYPE",
     REMOVE_EXPOSURE_TYPE = "REMOVE_EXPOSURE_TYPE",
     SET_BIOMARKER = "SET_BIOMARKER",
