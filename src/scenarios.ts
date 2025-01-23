@@ -43,8 +43,7 @@ const initialDemography = {
     numIndividuals: 0,
     tmax: 0,
     pRemoval: 0,
-    rObj: null,
-    requireRecalculation: true
+    rObj: null
 }
 
 const measles: AppState = {
@@ -67,8 +66,7 @@ const measles: AppState = {
         numIndividuals: 100,
         tmax: 100,
         pRemoval: 1,
-        rObj: null,
-        requireRecalculation: true
+        rObj: null
     },
     rReady: false,
     kineticsFunction: "biphasic",

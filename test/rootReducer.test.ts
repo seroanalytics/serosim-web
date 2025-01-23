@@ -1,6 +1,8 @@
 import {Action, ActionType} from "../src/types";
 import {mockAppState, mockKineticsModel} from "./mocks";
 import {rootReducer} from "../src/rootReducer";
+import {WebRDataJs} from "webr/dist/webR/robj";
+import {scenarios} from "../src/scenarios";
 
 describe("rootReducer", () => {
 
@@ -50,5 +52,22 @@ describe("rootReducer", () => {
         }
         result = rootReducer(state, action);
         expect(result.rReady).toBe(false);
-    })
+    });
+
+    it("retains demography object and rReady after scenario loaded", () => {
+        let action: Action = {
+            type: ActionType.LOAD_SCENARIO,
+            payload: "measles"
+        }
+        const state = mockAppState({
+            rReady: true
+        });
+        state.demography.rObj = {type: "list", names: ["test"]} as WebRDataJs
+        const result = rootReducer(state, action);
+
+        expect(result.rReady).toBe(true);
+        expect(result.demography.rObj).toEqual({type: "list", names: ["test"]})
+        expect(result.immunityModel).toEqual(scenarios["measles"].immunityModel);
+    });
+
 });

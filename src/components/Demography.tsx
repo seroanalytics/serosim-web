@@ -30,8 +30,7 @@ export function Demography() {
         }, [dispatch, rService,
             demography.numIndividuals,
             demography.tmax,
-            demography.pRemoval,
-            demography.requireRecalculation], 500)
+            demography.pRemoval], 500)
 
     const setMaxTime = (tmax: number) => {
         dispatch({

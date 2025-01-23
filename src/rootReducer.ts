@@ -10,25 +10,15 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
     console.log(action.type);
     switch (action.type) {
         case ActionType.LOAD_SCENARIO:
-            return {
+            const demographyRObj = state.demography.rObj
+            const newState = {
                 ...scenarios[action.payload as string],
                 rReady: state.rReady
             }
-        case ActionType.ERROR_ADDED:
-            return {
-                ...state,
-                genericErrors: [...state.genericErrors, action.payload]
-            }
-        case ActionType.ERROR_DISMISSED:
-            return {
-                ...state,
-                genericErrors: state.genericErrors.filter(e => e !== action.payload)
-            }
-        case ActionType.CLEAR_ALL_ERRORS:
-            return {
-                ...state,
-                genericErrors: []
-            }
+            // If demographic params haven't changed, this will still be valid.
+            // If they have changed, the component will trigger a recalculation.
+            newState.demography.rObj = demographyRObj;
+            return newState
         case ActionType.ADD_EXPOSURE_TYPE:
             return addExposureType(state, action.payload)
         case ActionType.REMOVE_EXPOSURE_TYPE:
@@ -54,8 +44,7 @@ export const rootReducer = (state: AppState, action: Action): AppState => {
                 result: null,
                 demography: {
                     ...state.demography,
-                    ...action.payload,
-                    requireRecalculation: false
+                    ...action.payload
                 }
             }
         case ActionType.SET_RESULTS:
