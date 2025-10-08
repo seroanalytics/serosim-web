@@ -104,5 +104,18 @@ services:
 A new image tag is created, pushed to DockerHub, and deployed to DigitalOcean on all commits to main, 
 via the [deploy.yaml](https://github.com/seroanalytics/serosim-web/blob/main/.github/workflows/deploy.yaml) Github Action.
 
+### GitHub Pages
+The app can also be deployed to GitHub Pages for easy hosting and sharing. This is configured via the [deploy.yml](.github/workflows/deploy.yml) GitHub Actions workflow.
+
+**Setup Instructions:**
+1. Go to your repository settings on GitHub
+2. Navigate to "Pages" in the left sidebar
+3. Under "Source", select "GitHub Actions"
+4. The workflow will automatically deploy on every push to the `main` branch
+
+The app will be available at: `https://[your-username].github.io/serosim-web`
+
+**Note:** Make sure to update the `homepage` field in `package.json` to match your GitHub username and repository name.
+
 ## Domain
 The domain name `seroanalytics.org` is registered with NameCheap, but DNS is managed via DigitalOcean under the Networking section.
